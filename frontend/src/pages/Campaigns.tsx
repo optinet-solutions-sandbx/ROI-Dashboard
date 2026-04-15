@@ -34,7 +34,7 @@ export const Campaigns: React.FC<{ data: PerformanceRecord[] }> = ({ data }) => 
             <BarChart data={campData} margin={{ top: 20 }}>
               <XAxis dataKey="campaign" stroke="#64748b" tick={{ fontSize: 12 }} />
               <YAxis stroke="#64748b" tickFormatter={(val) => formatter.format(val)} />
-              <Tooltip formatter={(value: number) => formatter.format(value)} contentStyle={{ backgroundColor: '#0f172a', borderColor: '#1e293b', color: '#e2e8f0' }} />
+              <Tooltip formatter={(value) => formatter.format(Number(value))} contentStyle={{ backgroundColor: '#0f172a', borderColor: '#1e293b', color: '#e2e8f0' }} />
               <Bar dataKey="roi" radius={[4, 4, 0, 0]}>
                 {campData.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={entry.roi >= 0 ? '#7c3aed' : '#ef4444'} />
