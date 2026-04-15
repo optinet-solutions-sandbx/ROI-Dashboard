@@ -30,7 +30,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onFileUpload, activeTab, setAc
 
   return (
     <aside className="sidebar">
-      <h2>📊 RIO Dashboard</h2>
+      <h2>📊 ROI Dashboard</h2>
       
       <div 
         className="uploader-box" 
