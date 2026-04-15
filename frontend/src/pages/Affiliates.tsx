@@ -71,10 +71,10 @@ export const Affiliates: React.FC<{ data: PerformanceRecord[] }> = ({ data }) =>
         <div className="chart-title">Clicks vs Profit</div>
         <ResponsiveContainer width="100%" height={400}>
           <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
-            <XAxis type="number" dataKey="clicks" name="Total Clicks" stroke="#64748b" />
-            <YAxis type="number" dataKey="profit" name="Profit" stroke="#64748b" tickFormatter={(val) => `$${val}`} />
+            <XAxis type="number" dataKey="clicks" name="Total Clicks" stroke="#2d3e52" tick={{ fontSize: 11, fill: '#536b87' }} />
+            <YAxis type="number" dataKey="profit" name="Profit" stroke="#2d3e52" tick={{ fontSize: 11, fill: '#536b87' }} tickFormatter={(val) => `$${val}`} />
             <ZAxis type="category" dataKey="affiliate_id" name="Affiliate" />
-            <Tooltip cursor={{ strokeDasharray: '3 3' }} contentStyle={{ backgroundColor: '#0f172a', borderColor: '#1e293b', color: '#e2e8f0' }} />
+            <Tooltip cursor={{ strokeDasharray: '3 3' }} contentStyle={{ backgroundColor: '#0d1628', borderColor: '#1e293b', color: '#e9eef5' }} />
             <Scatter name="Affiliates" data={tableData} fill="#0ea5e9" opacity={0.6} />
           </ScatterChart>
         </ResponsiveContainer>

@@ -1,27 +1,35 @@
 import React from 'react';
+import { DollarSign, CreditCard, TrendingUp, Percent, UserCheck, Target } from 'lucide-react';
 import { KPICard } from '../components/KPICard';
 import { type PerformanceRecord, processKPIs } from '../utils/kpiEngine';
-import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar, Cell, PieChart, Pie, Legend } from 'recharts';
+import {
+  AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer,
+  BarChart, Bar, Cell, PieChart, Pie, Legend,
+} from 'recharts';
 
-const COLORS = ['#00d4ff', '#7c3aed', '#10b981', '#f59e0b', '#ef4444', '#ec4899'];
+const COLORS = ['#00d4ff', '#818cf8', '#10b981', '#f0b429', '#ef4444', '#ec4899'];
+
+const TOOLTIP_STYLE = { backgroundColor: '#0d1628', borderColor: '#1e293b', color: '#e9eef5' };
 
 export const Overview: React.FC<{ data: PerformanceRecord[] }> = ({ data }) => {
   const kpis = processKPIs(data);
-  const formatter = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
-  const pctFormatter = new Intl.NumberFormat('en-US', { style: 'percent', maximumFractionDigits: 1 });
-  
-  // Aggregate data for Time Series
-  const timeMap: Record<string, { date: string, revenue: number, cost: number, profit: number }> = {};
+  const usd  = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
+  const pct  = new Intl.NumberFormat('en-US', { style: 'percent', maximumFractionDigits: 1 });
+
+  /* Time-series aggregation */
+  const timeMap: Record<string, { date: string; revenue: number; cost: number; profit: number }> = {};
   data.forEach(d => {
     if (!d.date) return;
     if (!timeMap[d.date]) timeMap[d.date] = { date: d.date, revenue: 0, cost: 0, profit: 0 };
     timeMap[d.date].revenue += Number(d.revenue) || 0;
-    timeMap[d.date].cost += Number(d.cost) || 0;
-    timeMap[d.date].profit += (Number(d.revenue) || 0) - (Number(d.cost) || 0);
+    timeMap[d.date].cost    += Number(d.cost)    || 0;
+    timeMap[d.date].profit  += (Number(d.revenue) || 0) - (Number(d.cost) || 0);
   });
-  const timeData = Object.values(timeMap).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  const timeData = Object.values(timeMap).sort(
+    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+  );
 
-  // Aggregate Data for Affiliates
+  /* Top affiliates by profit */
   const affMap: Record<string, number> = {};
   data.forEach(d => {
     if (!d.affiliate_id) return;
@@ -29,9 +37,10 @@ export const Overview: React.FC<{ data: PerformanceRecord[] }> = ({ data }) => {
   });
   const topAffiliates = Object.keys(affMap)
     .map(key => ({ affiliate_id: key, profit: affMap[key] }))
-    .sort((a, b) => b.profit - a.profit).slice(0, 10);
+    .sort((a, b) => b.profit - a.profit)
+    .slice(0, 10);
 
-  // Aggregate Data for Countries
+  /* Revenue by country */
   const countryMap: Record<string, number> = {};
   data.forEach(d => {
     if (!d.country) return;
@@ -47,69 +56,76 @@ export const Overview: React.FC<{ data: PerformanceRecord[] }> = ({ data }) => {
       </div>
 
       <div className="kpi-grid">
-        <KPICard label="Revenue" value={formatter.format(kpis.revenue)} color="#00d4ff" />
-        <KPICard label="Cost" value={formatter.format(kpis.cost)} color="#f59e0b" />
-        <KPICard label="Profit" value={formatter.format(kpis.profit)} color="#10b981" />
-        <KPICard label="ROI" value={pctFormatter.format(kpis.roi)} color="#7c3aed" />
-        <KPICard label="FTDs" value={kpis.ftds.toLocaleString()} color="#ec4899" />
-        <KPICard label="CPA" value={formatter.format(kpis.cpa)} color="#ef4444" />
+        <KPICard label="Revenue" value={usd.format(kpis.revenue)} color="#00d4ff" icon={<DollarSign size={15} />} />
+        <KPICard label="Cost"    value={usd.format(kpis.cost)}    color="#f0b429" icon={<CreditCard  size={15} />} />
+        <KPICard label="Profit"  value={usd.format(kpis.profit)}  color="#10b981" icon={<TrendingUp  size={15} />} />
+        <KPICard label="ROI"     value={pct.format(kpis.roi)}     color="#818cf8" icon={<Percent     size={15} />} />
+        <KPICard label="FTDs"    value={kpis.ftds.toLocaleString()} color="#ec4899" icon={<UserCheck size={15} />} />
+        <KPICard label="CPA"     value={usd.format(kpis.cpa)}     color="#f97316" icon={<Target      size={15} />} />
       </div>
 
       <div className="chart-grid cols-2">
         <div className="chart-card">
           <div className="chart-title">Performance Over Time</div>
-          <ResponsiveContainer width="100%" height={320}>
+          <ResponsiveContainer width="100%" height={310}>
             <AreaChart data={timeData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
               <defs>
-                <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#00d4ff" stopOpacity={0.8}/>
-                  <stop offset="95%" stopColor="#00d4ff" stopOpacity={0}/>
+                <linearGradient id="gRev"    x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%"  stopColor="#00d4ff" stopOpacity={0.7} />
+                  <stop offset="95%" stopColor="#00d4ff" stopOpacity={0}   />
                 </linearGradient>
-                <linearGradient id="colorCost" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.8}/>
-                  <stop offset="95%" stopColor="#f59e0b" stopOpacity={0}/>
+                <linearGradient id="gCost"   x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%"  stopColor="#f0b429" stopOpacity={0.7} />
+                  <stop offset="95%" stopColor="#f0b429" stopOpacity={0}   />
                 </linearGradient>
-                <linearGradient id="colorProfit" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#10b981" stopOpacity={0.8}/>
-                  <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                <linearGradient id="gProfit" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%"  stopColor="#10b981" stopOpacity={0.7} />
+                  <stop offset="95%" stopColor="#10b981" stopOpacity={0}   />
                 </linearGradient>
               </defs>
-              <XAxis dataKey="date" stroke="#64748b" tick={{ fontSize: 12 }} />
-              <YAxis stroke="#64748b" tick={{ fontSize: 12 }} />
-              <Tooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: '#1e293b' }} />
-              <Area type="monotone" dataKey="revenue" stroke="#00d4ff" fillOpacity={1} fill="url(#colorRev)" />
-              <Area type="monotone" dataKey="cost" stroke="#f59e0b" fillOpacity={1} fill="url(#colorCost)" />
-              <Area type="monotone" dataKey="profit" stroke="#10b981" fillOpacity={1} fill="url(#colorProfit)" />
+              <XAxis dataKey="date"   stroke="#2d3e52" tick={{ fontSize: 11, fill: '#536b87' }} />
+              <YAxis                  stroke="#2d3e52" tick={{ fontSize: 11, fill: '#536b87' }} />
+              <Tooltip contentStyle={TOOLTIP_STYLE} />
+              <Area type="monotone" dataKey="revenue" stroke="#00d4ff" strokeWidth={1.5} fillOpacity={1} fill="url(#gRev)"    />
+              <Area type="monotone" dataKey="cost"    stroke="#f0b429" strokeWidth={1.5} fillOpacity={1} fill="url(#gCost)"   />
+              <Area type="monotone" dataKey="profit"  stroke="#10b981" strokeWidth={1.5} fillOpacity={1} fill="url(#gProfit)" />
             </AreaChart>
           </ResponsiveContainer>
         </div>
 
         <div className="chart-card">
           <div className="chart-title">Revenue by Country</div>
-          <ResponsiveContainer width="100%" height={320}>
+          <ResponsiveContainer width="100%" height={310}>
             <PieChart>
-              <Pie data={countryData} innerRadius={80} outerRadius={120} paddingAngle={5} dataKey="value">
-                {countryData.map((_, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+              <Pie
+                data={countryData}
+                innerRadius={70}
+                outerRadius={110}
+                paddingAngle={4}
+                dataKey="value"
+                strokeWidth={0}
+              >
+                {countryData.map((_, idx) => (
+                  <Cell key={`cell-${idx}`} fill={COLORS[idx % COLORS.length]} />
                 ))}
               </Pie>
-              <Tooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: '#1e293b', color: '#e2e8f0' }} />
+              <Tooltip contentStyle={TOOLTIP_STYLE} />
               <Legend verticalAlign="bottom" height={36} iconType="circle" />
             </PieChart>
           </ResponsiveContainer>
         </div>
       </div>
 
-      <div className="chart-card" style={{ marginTop: '24px' }}>
+      <div className="chart-card" style={{ marginTop: 20 }}>
         <div className="chart-title">Top 10 Affiliates by Profit</div>
-        <ResponsiveContainer width="100%" height={320}>
+        <ResponsiveContainer width="100%" height={310}>
           <BarChart data={topAffiliates} layout="vertical" margin={{ left: 20 }}>
-            <XAxis type="number" stroke="#64748b" />
-            <YAxis type="category" dataKey="affiliate_id" stroke="#64748b" tick={{ fontSize: 12 }} width={100} />
-            <Tooltip cursor={{ fill: 'rgba(30, 41, 59, 0.5)' }} contentStyle={{ backgroundColor: '#0f172a', borderColor: '#1e293b' }} />
-            <Bar dataKey="profit" fill="#00d4ff" radius={[0, 4, 4, 0]}>
-              {topAffiliates.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={entry.profit > 0 ? '#00d4ff' : '#ef4444'} />
+            <XAxis type="number"   stroke="#2d3e52" tick={{ fontSize: 11, fill: '#536b87' }} />
+            <YAxis type="category" dataKey="affiliate_id" stroke="#2d3e52" tick={{ fontSize: 11, fill: '#536b87' }} width={100} />
+            <Tooltip cursor={{ fill: 'rgba(255,255,255,0.04)' }} contentStyle={TOOLTIP_STYLE} />
+            <Bar dataKey="profit" radius={[0, 4, 4, 0]}>
+              {topAffiliates.map((entry, idx) => (
+                <Cell key={`cell-${idx}`} fill={entry.profit >= 0 ? '#00d4ff' : '#ef4444'} />
               ))}
             </Bar>
           </BarChart>

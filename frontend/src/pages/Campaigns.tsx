@@ -32,9 +32,9 @@ export const Campaigns: React.FC<{ data: PerformanceRecord[] }> = ({ data }) => 
         {campData.length > 0 ? (
           <ResponsiveContainer width="100%" height="90%">
             <BarChart data={campData} margin={{ top: 20 }}>
-              <XAxis dataKey="campaign" stroke="#64748b" tick={{ fontSize: 12 }} />
-              <YAxis stroke="#64748b" tickFormatter={(val) => formatter.format(val)} />
-              <Tooltip formatter={(value) => formatter.format(Number(value))} contentStyle={{ backgroundColor: '#0f172a', borderColor: '#1e293b', color: '#e2e8f0' }} />
+              <XAxis dataKey="campaign" stroke="#2d3e52" tick={{ fontSize: 11, fill: '#536b87' }} />
+              <YAxis stroke="#2d3e52" tick={{ fontSize: 11, fill: '#536b87' }} tickFormatter={(val) => formatter.format(val)} />
+              <Tooltip formatter={(value) => formatter.format(Number(value))} contentStyle={{ backgroundColor: '#0d1628', borderColor: '#1e293b', color: '#e9eef5' }} />
               <Bar dataKey="roi" radius={[4, 4, 0, 0]}>
                 {campData.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={entry.roi >= 0 ? '#7c3aed' : '#ef4444'} />
