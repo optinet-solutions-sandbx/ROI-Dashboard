@@ -6,6 +6,7 @@ import { Overview } from './pages/Overview';
 import { Affiliates } from './pages/Affiliates';
 import { Campaigns } from './pages/Campaigns';
 import { Insights } from './pages/Insights';
+import { Data } from './pages/Data';
 
 function App() {
   const [data, setData] = useState<PerformanceRecord[]>([]);
@@ -98,6 +99,7 @@ function App() {
             {activeTab === 'Affiliates' && <Affiliates data={data} />}
             {activeTab === 'Campaigns' && <Campaigns data={data} />}
             {activeTab === 'Insights' && <Insights data={data} />}
+            {activeTab === 'Data' && <Data data={data} />}
           </div>
         ) : null}
       </main>
