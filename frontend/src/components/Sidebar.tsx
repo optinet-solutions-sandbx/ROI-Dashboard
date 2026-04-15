@@ -19,8 +19,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ onFileUpload, activeTab, setAc
   const handleDragOver = (e: React.DragEvent) => e.preventDefault();
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      onFileUpload(e.dataTransfer.files[0]);
+    const file = e.dataTransfer.files?.[0];
+    if (file) {
+      const name = file.name.toLowerCase();
+      if (!name.endsWith('.xlsx') && !name.endsWith('.xls') && !name.endsWith('.csv')) {
+        alert('Please drop an Excel file (.xlsx, .xls, or .csv)');
+        return;
+      }
+      onFileUpload(file);
     }
   };
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {

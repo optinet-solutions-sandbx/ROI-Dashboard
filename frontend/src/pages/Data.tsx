@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import type { PerformanceRecord } from '../utils/kpiEngine';
 
 const PAGE_SIZE = 50;
@@ -8,6 +8,8 @@ const formatHeader = (key: string): string =>
 
 export const Data: React.FC<{ data: PerformanceRecord[] }> = ({ data }) => {
   const [page, setPage] = useState(0);
+
+  useEffect(() => { setPage(0); }, [data]);
 
   if (data.length === 0) {
     return (
