@@ -12,7 +12,10 @@ export const Data: React.FC<{ data: PerformanceRecord[] }> = ({ data }) => {
   if (data.length === 0) {
     return (
       <div className="empty-state">
-        <p style={{ color: '#94a3b8' }}>No data loaded.</p>
+        <h2 style={{ fontSize: '2rem', marginBottom: '16px' }}>No data to display</h2>
+        <p style={{ color: '#94a3b8', maxWidth: '400px', textAlign: 'center' }}>
+          Upload an Excel file from the sidebar to view raw records here.
+        </p>
       </div>
     );
   }
@@ -65,6 +68,7 @@ export const Data: React.FC<{ data: PerformanceRecord[] }> = ({ data }) => {
           className="uploader-btn"
           onClick={() => setPage(p => p - 1)}
           disabled={page === 0}
+          aria-label="Previous page"
           style={{ opacity: page === 0 ? 0.4 : 1, cursor: page === 0 ? 'not-allowed' : 'pointer' }}
         >
           ← Prev
@@ -76,6 +80,7 @@ export const Data: React.FC<{ data: PerformanceRecord[] }> = ({ data }) => {
           className="uploader-btn"
           onClick={() => setPage(p => p + 1)}
           disabled={page >= totalPages - 1}
+          aria-label="Next page"
           style={{ opacity: page >= totalPages - 1 ? 0.4 : 1, cursor: page >= totalPages - 1 ? 'not-allowed' : 'pointer' }}
         >
           Next →
