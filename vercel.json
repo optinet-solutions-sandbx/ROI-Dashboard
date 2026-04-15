@@ -3,6 +3,5 @@
   "outputDirectory": "dist",
   "installCommand": "npm install",
   "framework": "vite",
-  "rootDirectory": "frontend",
-  "nodeVersion": "22.x"
+  "rootDirectory": "frontend"
 }
