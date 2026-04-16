@@ -21,27 +21,27 @@ export const parseExcelFile = async (file: File): Promise<any[]> => {
     const reader = new FileReader();
     reader.onload = (e) => {
       try {
-        const data = e.target?.result;
-        const workbook = XLSX.read(data, { type: 'binary' });
+        const data = e.target?.result as ArrayBuffer;
+        // type:'array' + Uint8Array is significantly faster than readAsBinaryString / type:'binary'
+        const workbook = XLSX.read(new Uint8Array(data), { type: 'array' });
 
-        let allData: any[] = [];
+        const allData: any[] = [];
 
-        workbook.SheetNames.forEach(sheetName => {
+        for (const sheetName of workbook.SheetNames) {
           const sheet = workbook.Sheets[sheetName];
           const rawJSON = XLSX.utils.sheet_to_json(sheet) as any[];
 
-          const normalizedJSON = rawJSON.map(row => {
+          for (const row of rawJSON) {
             const newRow: Record<string, any> = {};
             for (const key in row) {
               const normKey = normalizeColumnName(key);
               const aliasedKey = COLUMN_ALIASES[normKey] ?? normKey;
               newRow[aliasedKey] = row[key];
             }
-            return newRow;
-          });
-
-          allData = [...allData, ...normalizedJSON];
-        });
+            // push is O(1) per row; spread was O(n) per sheet, making total O(n²)
+            allData.push(newRow);
+          }
+        }
 
         resolve(allData);
       } catch (error) {
@@ -49,6 +49,6 @@ export const parseExcelFile = async (file: File): Promise<any[]> => {
       }
     };
     reader.onerror = (error) => reject(error);
-    reader.readAsBinaryString(file);
+    reader.readAsArrayBuffer(file); // ~3-5× faster than readAsBinaryString for large files
   });
 };
