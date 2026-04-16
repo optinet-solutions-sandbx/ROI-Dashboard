@@ -19,3 +19,10 @@ node_modules/
 
 # Claude Code internal files
 .superpowers/
+
+# Environment variables (never commit secrets)
+.env
+.env.local
+.env*.local
+frontend/.env
+frontend/.env.local

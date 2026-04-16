@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { BarChart3, LayoutDashboard, Users, Megaphone, Lightbulb, Table, Menu } from 'lucide-react';
 import { Sidebar } from './components/Sidebar';
 import { parseExcelFile } from './utils/excelParser';
@@ -8,6 +8,7 @@ import { Affiliates } from './pages/Affiliates';
 import { Campaigns } from './pages/Campaigns';
 import { Insights } from './pages/Insights';
 import { Data } from './pages/Data';
+import { fetchRecords, replaceRecords } from './lib/db';
 
 const TABS = [
   { id: 'Overview',   label: 'Overview',   Icon: LayoutDashboard },
@@ -24,14 +25,24 @@ function App() {
   const [isDraggingOver, setDragging] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  // Load persisted data from Supabase on first render
+  useEffect(() => {
+    setLoading(true);
+    fetchRecords()
+      .then(records => { if (records.length > 0) setData(records); })
+      .catch(err => console.error('Failed to load from Supabase:', err))
+      .finally(() => setLoading(false));
+  }, []);
+
   const handleFileUpload = async (file: File) => {
     try {
       setLoading(true);
       const parsedData = await parseExcelFile(file);
       setData(parsedData);
+      await replaceRecords(parsedData);
     } catch (error) {
-      console.error('Error parsing excel:', error);
-      alert('Failed to parse Excel file. Make sure it is valid.');
+      console.error('Error parsing or saving file:', error);
+      alert('Failed to process file. Check the console for details.');
     } finally {
       setLoading(false);
     }
