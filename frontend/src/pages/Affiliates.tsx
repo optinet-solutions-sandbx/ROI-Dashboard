@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Search, X } from 'lucide-react';
 import type { PerformanceRecord } from '../utils/kpiEngine';
 import { useChartColors } from '../lib/theme';
 import {
@@ -12,7 +13,8 @@ const PAGE_SIZE = 20;
 const LINE_COLORS = ['#00d4ff', '#f0b429', '#10b981', '#ec4899', '#818cf8', '#f97316'];
 
 export const Affiliates: React.FC<{ data: PerformanceRecord[] }> = ({ data }) => {
-  const [page, setPage] = useState(1);
+  const [page, setPage]           = useState(1);
+  const [searchTerm, setSearchTerm] = useState('');
   const { axisColor, axisStroke, gridStroke, tooltipStyle } = useChartColors();
 
   /* ── Aggregate per-affiliate totals ── */
@@ -35,10 +37,26 @@ export const Affiliates: React.FC<{ data: PerformanceRecord[] }> = ({ data }) =>
     cpa: row.ftds > 0 ? row.cost / row.ftds : 0,
   })).sort((a, b) => b.profit - a.profit);
 
-  const totalPages = Math.max(1, Math.ceil(tableData.length / PAGE_SIZE));
+  /* ── Search filter ── */
+  const filteredData = searchTerm.trim() === ''
+    ? tableData
+    : tableData.filter(row => {
+        const q = searchTerm.toLowerCase();
+        return (
+          String(row.affiliate_id   ?? '').toLowerCase().includes(q) ||
+          String(row.affiliate_name ?? '').toLowerCase().includes(q)
+        );
+      });
+
+  const handleSearch = (term: string) => {
+    setSearchTerm(term);
+    setPage(1); // reset to page 1 on new search
+  };
+
+  const totalPages = Math.max(1, Math.ceil(filteredData.length / PAGE_SIZE));
   const safePage   = Math.min(page, totalPages);
   const pageStart  = (safePage - 1) * PAGE_SIZE;
-  const pageData   = tableData.slice(pageStart, pageStart + PAGE_SIZE);
+  const pageData   = filteredData.slice(pageStart, pageStart + PAGE_SIZE);
 
   /* ── Top 6 affiliates monthly profit line chart ── */
   const top6Ids = tableData.slice(0, 6).map(a => a.affiliate_id);
@@ -139,6 +157,51 @@ export const Affiliates: React.FC<{ data: PerformanceRecord[] }> = ({ data }) =>
         )}
       </div>
 
+      {/* ── Affiliate Search ── */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+        <div style={{ position: 'relative', flex: 1, maxWidth: 400 }}>
+          <Search
+            size={15}
+            style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: axisColor, pointerEvents: 'none' }}
+          />
+          <input
+            type="text"
+            placeholder="Search by affiliate name or ID…"
+            value={searchTerm}
+            onChange={e => handleSearch(e.target.value)}
+            style={{
+              width: '100%',
+              padding: '8px 32px 8px 32px',
+              borderRadius: 8,
+              border: '1px solid var(--border)',
+              backgroundColor: 'var(--bg-input)',
+              color: 'var(--text-primary)',
+              fontSize: '0.875rem',
+              outline: 'none',
+              boxSizing: 'border-box',
+            }}
+          />
+          {searchTerm && (
+            <button
+              onClick={() => handleSearch('')}
+              aria-label="Clear search"
+              style={{
+                position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)',
+                background: 'none', border: 'none', cursor: 'pointer', color: axisColor,
+                display: 'flex', alignItems: 'center', padding: 0,
+              }}
+            >
+              <X size={14} />
+            </button>
+          )}
+        </div>
+        {searchTerm && (
+          <span style={{ fontSize: '0.8rem', color: axisColor }}>
+            {filteredData.length} result{filteredData.length !== 1 ? 's' : ''}
+          </span>
+        )}
+      </div>
+
       {/* ── Affiliate Table ── */}
       <div className="data-table-container">
         <table className="data-table">
@@ -177,10 +240,10 @@ export const Affiliates: React.FC<{ data: PerformanceRecord[] }> = ({ data }) =>
                 <td style={{ color: 'var(--text-primary)' }}>{formatter.format(row.cpa)}</td>
               </tr>
             ))}
-            {tableData.length === 0 && (
+            {filteredData.length === 0 && (
               <tr>
                 <td colSpan={10} style={{ textAlign: 'center', color: axisColor, padding: '32px 0' }}>
-                  No affiliate data found.
+                  {searchTerm ? `No affiliates match "${searchTerm}".` : 'No affiliate data found.'}
                 </td>
               </tr>
             )}
@@ -190,7 +253,8 @@ export const Affiliates: React.FC<{ data: PerformanceRecord[] }> = ({ data }) =>
         {totalPages > 1 && (
           <div className="pagination">
             <span className="pagination__info">
-              Showing {pageStart + 1}–{Math.min(pageStart + PAGE_SIZE, tableData.length)} of {tableData.length} affiliates
+              Showing {pageStart + 1}–{Math.min(pageStart + PAGE_SIZE, filteredData.length)} of {filteredData.length} affiliates
+              {searchTerm && tableData.length !== filteredData.length && ` (filtered from ${tableData.length})`}
             </span>
             <div className="pagination__controls">
               <button className="pagination__btn" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={safePage === 1}>
