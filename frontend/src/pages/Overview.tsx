@@ -62,24 +62,24 @@ export const Overview: React.FC<{ data: PerformanceRecord[] }> = ({ data }) => {
 
       {/* ── Financial Metrics ── */}
       <div className="kpi-group-label">Financial</div>
-      <div className="kpi-grid" style={{ marginBottom: 14 }}>
-        <KPICard label="FTD"                   value={kpis.ftds.toLocaleString()}           color="#ec4899" icon={<UserCheck       size={15} />} />
-        <KPICard label="Deposits Sum"          value={usd.format(kpis.revenue)}              color="#00d4ff" icon={<DollarSign      size={15} />} />
-        <KPICard label="Casino Real NGR"       value={usd.format(kpis.casino_real_ngr)}      color="#10b981" icon={<TrendingUp      size={15} />} />
-        <KPICard label="SB Real NGR"           value={usd.format(kpis.sb_real_ngr)}          color="#34d399" icon={<Activity        size={15} />} />
-        <KPICard label="Partner Income"        value={usd.format(kpis.cost)}                 color="#f0b429" icon={<CreditCard      size={15} />} />
-        <KPICard label="Flats &amp; Adj."      value={usd.format(kpis.flats_and_adjustments)} color="#818cf8" icon={<Sliders       size={15} />} />
+      <div className="kpi-grid" style={{ marginBottom: 20 }}>
+        <KPICard label="FTD"             value={kpis.ftds.toLocaleString()}            color="#ec4899" icon={<UserCheck      size={15} />} />
+        <KPICard label="Deposits Sum"    value={usd.format(kpis.revenue)}              color="#00d4ff" icon={<DollarSign     size={15} />} />
+        <KPICard label="Casino NGR"      value={usd.format(kpis.casino_real_ngr)}      color="#10b981" icon={<TrendingUp     size={15} />} />
+        <KPICard label="SB NGR"          value={usd.format(kpis.sb_real_ngr)}          color="#34d399" icon={<Activity       size={15} />} />
+        <KPICard label="Partner Income"  value={usd.format(kpis.cost)}                 color="#f0b429" icon={<CreditCard     size={15} />} />
+        <KPICard label="Flats & Adj."    value={usd.format(kpis.flats_and_adjustments)} color="#818cf8" icon={<Sliders      size={15} />} />
       </div>
 
       {/* ── Performance Ratios ── */}
       <div className="kpi-group-label">Performance</div>
-      <div className="kpi-grid">
-        <KPICard label="ROI"       value={kpis.roi.toFixed(1)}          color="#818cf8" icon={<Percent          size={15} />} />
-        <KPICard label="%Bonus"    value={pct.format(kpis.bonus_pct)}   color="#f97316" icon={<Gift             size={15} />} />
-        <KPICard label="%Cashout"  value={pct.format(kpis.cashout_pct)} color="#ef4444" icon={<ArrowDownCircle  size={15} />} />
-        <KPICard label="ADPU"      value={usd.format(kpis.adpu)}        color="#00d4ff" icon={<Users            size={15} />} />
-        <KPICard label="ARPU"      value={usd.format(kpis.arpu)}        color="#10b981" icon={<BarChart2        size={15} />} />
-        <KPICard label="ECPA"      value={usd.format(kpis.ecpa)}        color="#f97316" icon={<Target           size={15} />} />
+      <div className="kpi-grid" style={{ marginBottom: 24 }}>
+        <KPICard label="ROI"      value={kpis.roi.toFixed(1)}          color="#818cf8" icon={<Percent         size={15} />} />
+        <KPICard label="% Bonus"  value={pct.format(kpis.bonus_pct)}   color="#f97316" icon={<Gift            size={15} />} />
+        <KPICard label="% Cashout" value={pct.format(kpis.cashout_pct)} color="#ef4444" icon={<ArrowDownCircle size={15} />} />
+        <KPICard label="ADPU"     value={usd.format(kpis.adpu)}        color="#00d4ff" icon={<Users           size={15} />} />
+        <KPICard label="ARPU"     value={usd.format(kpis.arpu)}        color="#10b981" icon={<BarChart2       size={15} />} />
+        <KPICard label="ECPA"     value={usd.format(kpis.ecpa)}        color="#f97316" icon={<Target          size={15} />} />
       </div>
 
       <div className="chart-grid cols-2">

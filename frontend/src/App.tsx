@@ -92,6 +92,7 @@ function App() {
         setActiveTab={switchTab}
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
+        recordCount={data.length}
       />
 
       {/* ── Main Content ── */}

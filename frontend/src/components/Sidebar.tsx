@@ -10,6 +10,7 @@ interface SidebarProps {
   setActiveTab: (tab: string) => void;
   isOpen:       boolean;
   onClose:      () => void;
+  recordCount?: number;
 }
 
 const TABS = [
@@ -21,9 +22,8 @@ const TABS = [
 ];
 
 export const Sidebar: React.FC<SidebarProps> = ({
-  onFileUpload, activeTab, setActiveTab, isOpen, onClose,
+  onFileUpload, activeTab, setActiveTab, isOpen, onClose, recordCount = 0,
 }) => {
-
   const handleDragOver = (e: React.DragEvent) => e.preventDefault();
 
   const handleDrop = (e: React.DragEvent) => {
@@ -45,14 +45,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
   return (
     <aside className={`sidebar${isOpen ? ' open' : ''}`}>
 
-      {/* Close button — visible on mobile only via CSS */}
       <button className="sidebar__close-btn" onClick={onClose} aria-label="Close menu">
-        <X size={15} />
+        <X size={14} />
       </button>
 
       {/* Brand */}
       <div className="sidebar__logo">
-        <BarChart3 size={22} className="sidebar__logo-icon" />
+        <BarChart3 size={20} className="sidebar__logo-icon" />
         <div>
           <div className="sidebar__logo-text">ROI Dashboard</div>
           <span className="sidebar__logo-sub">Affiliate Intelligence</span>
@@ -68,13 +67,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
           onDrop={handleDrop}
         >
           <div className="upload-dropzone__icon">
-            <UploadCloud size={26} />
+            <UploadCloud size={24} />
           </div>
           <p className="upload-dropzone__text">
             Drag &amp; drop an Excel or CSV file, or browse below.
           </p>
           <label className="upload-btn">
-            <UploadCloud size={13} />
+            <UploadCloud size={12} />
             Browse File
             <input
               type="file"
@@ -84,6 +83,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
             />
           </label>
         </div>
+
+        {recordCount > 0 && (
+          <div className="sidebar__data-status">
+            <span className="sidebar__data-dot" />
+            {recordCount.toLocaleString()} records loaded
+          </div>
+        )}
       </div>
 
       {/* Navigation */}
@@ -100,6 +106,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </button>
         ))}
       </nav>
+
+      {/* Footer */}
+      <div className="sidebar__footer">
+        <span>ROI Dashboard</span>
+        <span>v1.0</span>
+      </div>
 
     </aside>
   );
