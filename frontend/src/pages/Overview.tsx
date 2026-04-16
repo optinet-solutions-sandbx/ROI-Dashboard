@@ -177,7 +177,7 @@ export const Overview: React.FC<{ data: PerformanceRecord[] }> = ({ data }) => {
             />
             <Tooltip
               cursor={{ fill: 'rgba(255,255,255,0.04)' }}
-              contentStyle={tooltipStyle}
+              contentStyle={{ backgroundColor: '#ffffff', borderColor: '#e2e8f0', color: '#111827', borderRadius: 8, fontSize: 12, boxShadow: '0 4px 20px rgba(0,0,0,0.15)' }}
               formatter={(value) => [`$${Number(value ?? 0).toLocaleString()}`, 'Profit']}
             />
             <Bar dataKey="profit" radius={[0, 4, 4, 0]}>

@@ -6,10 +6,25 @@ const PAGE_SIZE = 20;
 const formatHeader = (key: string): string =>
   key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 
+const inputStyle: React.CSSProperties = {
+  padding: '8px 12px',
+  borderRadius: '8px',
+  border: '1px solid #1e293b',
+  backgroundColor: '#0d1628',
+  color: '#e9eef5',
+  fontSize: '0.875rem',
+  outline: 'none',
+  minWidth: '180px',
+  flex: 1,
+};
+
 export const Data: React.FC<{ data: PerformanceRecord[] }> = ({ data }) => {
   const [page, setPage] = useState(0);
+  const [searchAffiliate, setSearchAffiliate] = useState('');
+  const [searchCountry, setSearchCountry] = useState('');
+  const [searchCampaign, setSearchCampaign] = useState('');
 
-  useEffect(() => { setPage(0); }, [data]);
+  useEffect(() => { setPage(0); }, [data, searchAffiliate, searchCountry, searchCampaign]);
 
   if (data.length === 0) {
     return (
@@ -22,11 +37,23 @@ export const Data: React.FC<{ data: PerformanceRecord[] }> = ({ data }) => {
     );
   }
 
-  const columns = Object.keys(data[0]);
-  const totalPages = Math.ceil(data.length / PAGE_SIZE);
-  const start = page * PAGE_SIZE;
-  const end = Math.min(start + PAGE_SIZE, data.length);
-  const rows = data.slice(start, end);
+  const filteredData = data.filter(row => {
+    const affId    = String(row.affiliate_id ?? row.affiliate ?? '').toLowerCase();
+    const country  = String(row.country ?? '').toLowerCase();
+    const campaign = String(row.campaign ?? row.brand ?? '').toLowerCase();
+    return (
+      (!searchAffiliate || affId.includes(searchAffiliate.toLowerCase())) &&
+      (!searchCountry   || country.includes(searchCountry.toLowerCase())) &&
+      (!searchCampaign  || campaign.includes(searchCampaign.toLowerCase()))
+    );
+  });
+
+  const columns   = Object.keys(data[0]);
+  const totalPages = Math.max(1, Math.ceil(filteredData.length / PAGE_SIZE));
+  const safePage   = Math.min(page, totalPages - 1);
+  const start      = safePage * PAGE_SIZE;
+  const end        = Math.min(start + PAGE_SIZE, filteredData.length);
+  const rows       = filteredData.slice(start, end);
 
   return (
     <div>
@@ -35,8 +62,34 @@ export const Data: React.FC<{ data: PerformanceRecord[] }> = ({ data }) => {
         <p>Raw records from uploaded file</p>
       </div>
 
+      {/* Search inputs */}
+      <div style={{ display: 'flex', gap: '12px', marginBottom: '16px', flexWrap: 'wrap' }}>
+        <input
+          type="text"
+          placeholder="Search Affiliate ID…"
+          value={searchAffiliate}
+          onChange={e => setSearchAffiliate(e.target.value)}
+          style={inputStyle}
+        />
+        <input
+          type="text"
+          placeholder="Search Country…"
+          value={searchCountry}
+          onChange={e => setSearchCountry(e.target.value)}
+          style={inputStyle}
+        />
+        <input
+          type="text"
+          placeholder="Search Campaign…"
+          value={searchCampaign}
+          onChange={e => setSearchCampaign(e.target.value)}
+          style={inputStyle}
+        />
+      </div>
+
       <div style={{ marginBottom: '12px', color: '#94a3b8', fontSize: '0.875rem' }}>
-        Showing {(start + 1).toLocaleString()}–{end.toLocaleString()} of {data.length.toLocaleString()} rows
+        Showing {filteredData.length === 0 ? 0 : (start + 1).toLocaleString()}–{end.toLocaleString()} of {filteredData.length.toLocaleString()} rows
+        {filteredData.length !== data.length && ` (filtered from ${data.length.toLocaleString()})`}
       </div>
 
       <div className="data-table-container" style={{ overflowX: 'auto' }}>
@@ -61,6 +114,13 @@ export const Data: React.FC<{ data: PerformanceRecord[] }> = ({ data }) => {
                 ))}
               </tr>
             ))}
+            {rows.length === 0 && (
+              <tr>
+                <td colSpan={columns.length} style={{ textAlign: 'center', color: '#94a3b8', padding: '32px 0' }}>
+                  No records match the current filters.
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
@@ -69,21 +129,21 @@ export const Data: React.FC<{ data: PerformanceRecord[] }> = ({ data }) => {
         <button
           className="uploader-btn"
           onClick={() => setPage(p => p - 1)}
-          disabled={page === 0}
+          disabled={safePage === 0}
           aria-label="Previous page"
-          style={{ opacity: page === 0 ? 0.4 : 1, cursor: page === 0 ? 'not-allowed' : 'pointer' }}
+          style={{ opacity: safePage === 0 ? 0.4 : 1, cursor: safePage === 0 ? 'not-allowed' : 'pointer' }}
         >
           ← Prev
         </button>
         <span style={{ color: '#94a3b8', fontSize: '0.875rem' }}>
-          Page {page + 1} of {totalPages}
+          Page {safePage + 1} of {totalPages}
         </span>
         <button
           className="uploader-btn"
           onClick={() => setPage(p => p + 1)}
-          disabled={page >= totalPages - 1}
+          disabled={safePage >= totalPages - 1}
           aria-label="Next page"
-          style={{ opacity: page >= totalPages - 1 ? 0.4 : 1, cursor: page >= totalPages - 1 ? 'not-allowed' : 'pointer' }}
+          style={{ opacity: safePage >= totalPages - 1 ? 0.4 : 1, cursor: safePage >= totalPages - 1 ? 'not-allowed' : 'pointer' }}
         >
           Next →
         </button>
