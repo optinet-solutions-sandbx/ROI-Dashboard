@@ -462,6 +462,16 @@ body {
   font-size: 0.875rem;
 }
 
+/* ─── KPI Group Label ─── */
+.kpi-group-label {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 10px;
+}
+
 /* ─── KPI Grid ─── */
 .kpi-grid {
   display: grid;
@@ -469,6 +479,10 @@ body {
   gap: 14px;
   margin-bottom: 28px;
 }
+
+/* ─── Hidden Scrollbar ─── */
+.scroll-hidden { scrollbar-width: none; -ms-overflow-style: none; }
+.scroll-hidden::-webkit-scrollbar { display: none; }
 
 /* ─── KPI Card ─── */
 .kpi-card {
