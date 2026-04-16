@@ -2,6 +2,8 @@ import * as XLSX from 'xlsx';
 
 const COLUMN_ALIASES: Record<string, string> = {
   partner_id: 'affiliate_id',
+  partner_name: 'affiliate_name',
+  affiliate: 'affiliate_id',
   player_country: 'country',
   campaign_name: 'campaign',
   stats_date: 'date',

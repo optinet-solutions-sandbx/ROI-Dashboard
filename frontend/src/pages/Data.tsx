@@ -44,7 +44,12 @@ export const Data: React.FC<{ data: PerformanceRecord[] }> = ({ data }) => {
     return affId.includes(q) || country.includes(q) || campaign.includes(q);
   });
 
-  const columns   = Object.keys(data[0]);
+  const rawColumns = Object.keys(data[0]);
+  const PRIORITY = ['affiliate_name', 'affiliate_id'];
+  const columns = [
+    ...PRIORITY.filter(c => rawColumns.includes(c)),
+    ...rawColumns.filter(c => !PRIORITY.includes(c)),
+  ];
   const totalPages = Math.max(1, Math.ceil(filteredData.length / PAGE_SIZE));
   const safePage   = Math.min(page, totalPages - 1);
   const start      = safePage * PAGE_SIZE;

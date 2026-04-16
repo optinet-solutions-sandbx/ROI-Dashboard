@@ -1,5 +1,6 @@
 export interface PerformanceRecord {
   affiliate_id?: string;
+  affiliate_name?: string;
   country?: string;
   campaign?: string;
   date?: string;

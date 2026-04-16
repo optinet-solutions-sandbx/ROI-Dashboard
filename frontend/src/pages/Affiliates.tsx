@@ -20,7 +20,8 @@ export const Affiliates: React.FC<{ data: PerformanceRecord[] }> = ({ data }) =>
   data.forEach(d => {
     if (!d.affiliate_id && !d.affiliate) return;
     const aff = d.affiliate_id || d.affiliate;
-    if (!affMap[aff]) affMap[aff] = { affiliate_id: aff, clicks: 0, ftds: 0, revenue: 0, cost: 0, profit: 0 };
+    if (!affMap[aff]) affMap[aff] = { affiliate_id: aff, affiliate_name: d.affiliate_name ?? '', clicks: 0, ftds: 0, revenue: 0, cost: 0, profit: 0 };
+    if (d.affiliate_name && !affMap[aff].affiliate_name) affMap[aff].affiliate_name = d.affiliate_name;
     affMap[aff].clicks  += Number(d.clicks)  || 0;
     affMap[aff].ftds    += Number(d.ftds)    || 0;
     affMap[aff].revenue += Number(d.revenue) || 0;
@@ -144,6 +145,7 @@ export const Affiliates: React.FC<{ data: PerformanceRecord[] }> = ({ data }) =>
           <thead>
             <tr>
               <th>#</th>
+              <th>Affiliate Name</th>
               <th>Affiliate ID</th>
               <th>Clicks</th>
               <th>FTDs</th>
@@ -160,6 +162,7 @@ export const Affiliates: React.FC<{ data: PerformanceRecord[] }> = ({ data }) =>
                 <td style={{ color: axisColor, fontFamily: 'var(--font-mono)', fontSize: '0.75rem' }}>
                   {String(pageStart + idx + 1).padStart(2, '0')}
                 </td>
+                <td style={{ fontWeight: 500 }}>{row.affiliate_name || '—'}</td>
                 <td style={{ fontWeight: 500 }}>{row.affiliate_id}</td>
                 <td>{row.clicks.toLocaleString()}</td>
                 <td>{row.ftds.toLocaleString()}</td>
@@ -176,7 +179,7 @@ export const Affiliates: React.FC<{ data: PerformanceRecord[] }> = ({ data }) =>
             ))}
             {tableData.length === 0 && (
               <tr>
-                <td colSpan={9} style={{ textAlign: 'center', color: axisColor, padding: '32px 0' }}>
+                <td colSpan={10} style={{ textAlign: 'center', color: axisColor, padding: '32px 0' }}>
                   No affiliate data found.
                 </td>
               </tr>
