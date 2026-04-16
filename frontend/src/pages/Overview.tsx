@@ -4,7 +4,7 @@ import { KPICard } from '../components/KPICard';
 import { type PerformanceRecord, processKPIs } from '../utils/kpiEngine';
 import {
   AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer,
-  BarChart, Bar, Cell, PieChart, Pie,
+  BarChart, Bar, Cell,
 } from 'recharts';
 
 const COLORS = [
@@ -43,21 +43,15 @@ export const Overview: React.FC<{ data: PerformanceRecord[] }> = ({ data }) => {
     .sort((a, b) => b.profit - a.profit)
     .slice(0, 10);
 
-  /* Revenue by country — top 10 + "Other" */
+  /* Revenue by country — all countries sorted by value */
   const countryMap: Record<string, number> = {};
   data.forEach(d => {
     if (!d.country) return;
     countryMap[d.country] = (countryMap[d.country] || 0) + (Number(d.revenue) || 0);
   });
-  const countryData = (() => {
-    const sorted = Object.keys(countryMap)
-      .map(key => ({ name: key, value: countryMap[key] }))
-      .sort((a, b) => b.value - a.value);
-    const top = sorted.slice(0, 10);
-    const otherVal = sorted.slice(10).reduce((s, c) => s + c.value, 0);
-    if (otherVal > 0) top.push({ name: 'Other', value: otherVal });
-    return top;
-  })();
+  const countryData = Object.keys(countryMap)
+    .map(key => ({ name: key, value: countryMap[key] }))
+    .sort((a, b) => b.value - a.value);
 
   return (
     <div>
@@ -67,12 +61,12 @@ export const Overview: React.FC<{ data: PerformanceRecord[] }> = ({ data }) => {
       </div>
 
       <div className="kpi-grid">
-        <KPICard label="Revenue" value={usd.format(kpis.revenue)} color="#00d4ff" icon={<DollarSign size={15} />} />
-        <KPICard label="Cost"    value={usd.format(kpis.cost)}    color="#f0b429" icon={<CreditCard  size={15} />} />
-        <KPICard label="Profit"  value={usd.format(kpis.profit)}  color="#10b981" icon={<TrendingUp  size={15} />} />
-        <KPICard label="ROI"     value={pct.format(kpis.roi)}     color="#818cf8" icon={<Percent     size={15} />} />
-        <KPICard label="FTDs"    value={kpis.ftds.toLocaleString()} color="#ec4899" icon={<UserCheck size={15} />} />
-        <KPICard label="CPA"     value={usd.format(kpis.cpa)}     color="#f97316" icon={<Target      size={15} />} />
+        <KPICard label="Deposits Sum"     value={usd.format(kpis.revenue)} color="#00d4ff" icon={<DollarSign size={15} />} />
+        <KPICard label="Partner Income"   value={usd.format(kpis.cost)}    color="#f0b429" icon={<CreditCard  size={15} />} />
+        <KPICard label="Casino Real NGR"  value={usd.format(kpis.profit)}  color="#10b981" icon={<TrendingUp  size={15} />} />
+        <KPICard label="ROI"              value={pct.format(kpis.roi)}     color="#818cf8" icon={<Percent     size={15} />} />
+        <KPICard label="FTD"              value={kpis.ftds.toLocaleString()} color="#ec4899" icon={<UserCheck size={15} />} />
+        <KPICard label="ECPA"             value={usd.format(kpis.cpa)}     color="#f97316" icon={<Target      size={15} />} />
       </div>
 
       <div className="chart-grid cols-2">
@@ -105,36 +99,41 @@ export const Overview: React.FC<{ data: PerformanceRecord[] }> = ({ data }) => {
         </div>
 
         <div className="chart-card">
-          <div className="chart-title">Revenue by Country</div>
-          <ResponsiveContainer width="100%" height={220}>
-            <PieChart>
-              <Pie
+          <div className="chart-title">Deposits Sum by Country</div>
+          <div style={{ maxHeight: 340, overflowY: 'auto', paddingRight: 4 }}>
+            <ResponsiveContainer width="100%" height={Math.max(countryData.length * 22, 200)}>
+              <BarChart
                 data={countryData}
-                innerRadius={60}
-                outerRadius={95}
-                paddingAngle={3}
-                dataKey="value"
-                strokeWidth={0}
-                label={({ name, percent }: { name?: string; percent?: number }) => (percent ?? 0) > 0.04 ? `${name ?? ''} ${((percent ?? 0) * 100).toFixed(0)}%` : ''}
-                labelLine={false}
+                layout="vertical"
+                margin={{ top: 2, right: 60, bottom: 2, left: 0 }}
+                barSize={12}
               >
-                {countryData.map((_, idx) => (
-                  <Cell key={`cell-${idx}`} fill={COLORS[idx % COLORS.length]} />
-                ))}
-              </Pie>
-              <Tooltip
-                contentStyle={TOOLTIP_STYLE}
-                formatter={(value) => [`$${Number(value ?? 0).toLocaleString()}`, 'Revenue']}
-              />
-            </PieChart>
-          </ResponsiveContainer>
-          <div className="country-legend">
-            {countryData.map((entry, idx) => (
-              <div key={entry.name} className="country-legend__item">
-                <span className="country-legend__dot" style={{ background: COLORS[idx % COLORS.length] }} />
-                <span className="country-legend__name">{entry.name}</span>
-              </div>
-            ))}
+                <XAxis
+                  type="number"
+                  stroke="#2d3e52"
+                  tick={{ fontSize: 9, fill: '#536b87' }}
+                  tickFormatter={(v) => v >= 1000000 ? `$${(v / 1000000).toFixed(0)}M` : v >= 1000 ? `$${(v / 1000).toFixed(0)}k` : `$${v}`}
+                  width={50}
+                />
+                <YAxis
+                  type="category"
+                  dataKey="name"
+                  stroke="#2d3e52"
+                  tick={{ fontSize: 9, fill: '#94a3b8' }}
+                  width={28}
+                />
+                <Tooltip
+                  contentStyle={TOOLTIP_STYLE}
+                  formatter={(value) => [`$${Number(value ?? 0).toLocaleString()}`, 'Deposits Sum']}
+                  cursor={{ fill: 'rgba(255,255,255,0.04)' }}
+                />
+                <Bar dataKey="value" radius={[0, 3, 3, 0]}>
+                  {countryData.map((_, idx) => (
+                    <Cell key={`cell-${idx}`} fill={COLORS[idx % COLORS.length]} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
           </div>
         </div>
       </div>

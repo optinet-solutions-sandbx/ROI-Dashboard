@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import type { PerformanceRecord } from '../utils/kpiEngine';
-import { ScatterChart, Scatter, XAxis, YAxis, Tooltip, ResponsiveContainer, ZAxis } from 'recharts';
+import { ScatterChart, Scatter, XAxis, YAxis, Tooltip, ResponsiveContainer, ZAxis, ReferenceLine, CartesianGrid } from 'recharts';
 
 const PAGE_SIZE = 20;
 
@@ -131,37 +131,71 @@ export const Affiliates: React.FC<{ data: PerformanceRecord[] }> = ({ data }) =>
       </div>
 
       <div className="chart-card" style={{ marginTop: '24px' }}>
-        <div className="chart-title">{scatterLabel} vs Profit</div>
-        <ResponsiveContainer width="100%" height={360}>
-          <ScatterChart margin={{ top: 20, right: 30, bottom: 20, left: 30 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+          <div className="chart-title" style={{ marginBottom: 0 }}>{scatterLabel} vs Profit</div>
+          <div style={{ display: 'flex', gap: 16, fontSize: 11, color: '#64748b' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+              <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#10b981', display: 'inline-block' }} />
+              Profit
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+              <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#ef4444', display: 'inline-block' }} />
+              Loss
+            </span>
+          </div>
+        </div>
+        <ResponsiveContainer width="100%" height={380}>
+          <ScatterChart margin={{ top: 20, right: 30, bottom: 30, left: 10 }}>
+            <CartesianGrid stroke="#1e293b" strokeDasharray="4 4" opacity={0.5} />
             <XAxis
               type="number"
               dataKey={scatterX}
               name={scatterLabel}
-              stroke="#2d3e52"
+              stroke="#1e293b"
               tick={{ fontSize: 11, fill: '#536b87' }}
-              tickFormatter={(v) => v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v}
-              label={{ value: scatterLabel, position: 'insideBottom', offset: -10, fill: '#536b87', fontSize: 11 }}
+              tickFormatter={(v) => v >= 1000 ? `${(v / 1000).toFixed(0)}k` : String(v)}
+              label={{ value: scatterLabel, position: 'insideBottom', offset: -16, fill: '#536b87', fontSize: 11 }}
             />
             <YAxis
               type="number"
               dataKey="profit"
               name="Profit"
-              stroke="#2d3e52"
+              stroke="#1e293b"
               tick={{ fontSize: 11, fill: '#536b87' }}
               tickFormatter={(val) => val >= 1000000 ? `$${(val / 1000000).toFixed(1)}M` : val >= 1000 ? `$${(val / 1000).toFixed(0)}k` : `$${val}`}
-              width={60}
+              width={65}
             />
-            <ZAxis type="category" dataKey="affiliate_id" name="Affiliate" />
+            <ZAxis range={[40, 40]} />
+            <ReferenceLine y={0} stroke="#475569" strokeDasharray="6 3" strokeWidth={1.5} />
             <Tooltip
-              cursor={{ strokeDasharray: '3 3' }}
-              contentStyle={{ backgroundColor: '#0d1628', borderColor: '#1e293b', color: '#e9eef5' }}
+              cursor={{ stroke: '#334155', strokeWidth: 1 }}
+              contentStyle={{ backgroundColor: '#0d1628', borderColor: '#1e293b', color: '#e9eef5', borderRadius: 8, fontSize: 12 }}
               formatter={(value, name) => {
-                if (name === 'Profit') return [`$${Number(value ?? 0).toLocaleString()}`, String(name ?? '')];
+                if (name === 'Profit') return [`$${Number(value ?? 0).toLocaleString()}`, 'Profit'];
                 return [Number(value ?? 0).toLocaleString(), String(name ?? '')];
               }}
+              labelFormatter={() => ''}
             />
-            <Scatter name="Affiliates" data={tableData} fill="#0ea5e9" opacity={0.7} />
+            <Scatter
+              name="Affiliates"
+              data={tableData}
+              shape={(props: any) => {
+                const { cx, cy, payload } = props;
+                const color = payload.profit >= 0 ? '#10b981' : '#ef4444';
+                return (
+                  <circle
+                    cx={cx}
+                    cy={cy}
+                    r={6}
+                    fill={color}
+                    fillOpacity={0.75}
+                    stroke={color}
+                    strokeWidth={1.5}
+                    strokeOpacity={1}
+                  />
+                );
+              }}
+            />
           </ScatterChart>
         </ResponsiveContainer>
       </div>
