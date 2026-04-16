@@ -4,7 +4,7 @@ import { KPICard } from '../components/KPICard';
 import { type PerformanceRecord, processKPIs } from '../utils/kpiEngine';
 import {
   AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer,
-  BarChart, Bar, Cell, PieChart, Pie, Legend,
+  BarChart, Bar, Cell, PieChart, Pie,
 } from 'recharts';
 
 const COLORS = [
@@ -115,7 +115,7 @@ export const Overview: React.FC<{ data: PerformanceRecord[] }> = ({ data }) => {
                 paddingAngle={3}
                 dataKey="value"
                 strokeWidth={0}
-                label={({ name, percent }) => percent > 0.04 ? `${name} ${(percent * 100).toFixed(0)}%` : ''}
+                label={({ name, percent }: { name?: string; percent?: number }) => (percent ?? 0) > 0.04 ? `${name ?? ''} ${((percent ?? 0) * 100).toFixed(0)}%` : ''}
                 labelLine={false}
               >
                 {countryData.map((_, idx) => (
@@ -124,7 +124,7 @@ export const Overview: React.FC<{ data: PerformanceRecord[] }> = ({ data }) => {
               </Pie>
               <Tooltip
                 contentStyle={TOOLTIP_STYLE}
-                formatter={(value: number) => [`$${value.toLocaleString()}`, 'Revenue']}
+                formatter={(value) => [`$${Number(value ?? 0).toLocaleString()}`, 'Revenue']}
               />
             </PieChart>
           </ResponsiveContainer>

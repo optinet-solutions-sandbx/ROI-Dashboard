@@ -156,9 +156,9 @@ export const Affiliates: React.FC<{ data: PerformanceRecord[] }> = ({ data }) =>
             <Tooltip
               cursor={{ strokeDasharray: '3 3' }}
               contentStyle={{ backgroundColor: '#0d1628', borderColor: '#1e293b', color: '#e9eef5' }}
-              formatter={(value: any, name: string) => {
-                if (name === 'Profit') return [`$${Number(value).toLocaleString()}`, name];
-                return [Number(value).toLocaleString(), name];
+              formatter={(value, name) => {
+                if (name === 'Profit') return [`$${Number(value ?? 0).toLocaleString()}`, String(name ?? '')];
+                return [Number(value ?? 0).toLocaleString(), String(name ?? '')];
               }}
             />
             <Scatter name="Affiliates" data={tableData} fill="#0ea5e9" opacity={0.7} />
