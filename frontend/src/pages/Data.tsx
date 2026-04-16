@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import type { PerformanceRecord } from '../utils/kpiEngine';
 
-const PAGE_SIZE = 50;
+const PAGE_SIZE = 20;
 
 const formatHeader = (key: string): string =>
   key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
