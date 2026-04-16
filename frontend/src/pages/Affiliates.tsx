@@ -1,13 +1,21 @@
 import React, { useState } from 'react';
 import type { PerformanceRecord } from '../utils/kpiEngine';
-import { ScatterChart, Scatter, XAxis, YAxis, Tooltip, ResponsiveContainer, ZAxis, ReferenceLine, CartesianGrid } from 'recharts';
+import { useChartColors } from '../lib/theme';
+import {
+  LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer,
+  CartesianGrid, Legend,
+} from 'recharts';
+import { ReferenceLine } from 'recharts';
 
 const PAGE_SIZE = 20;
 
+const LINE_COLORS = ['#00d4ff', '#f0b429', '#10b981', '#ec4899', '#818cf8', '#f97316'];
+
 export const Affiliates: React.FC<{ data: PerformanceRecord[] }> = ({ data }) => {
   const [page, setPage] = useState(1);
+  const { axisColor, axisStroke, gridStroke, tooltipStyle } = useChartColors();
 
-  // Aggregate data for affiliates table
+  /* ── Aggregate per-affiliate totals ── */
   const affMap: Record<string, any> = {};
   data.forEach(d => {
     if (!d.affiliate_id && !d.affiliate) return;
@@ -24,23 +32,40 @@ export const Affiliates: React.FC<{ data: PerformanceRecord[] }> = ({ data }) =>
     ...row,
     roi: row.cost > 0 ? row.profit / row.cost : 0,
     cpa: row.ftds > 0 ? row.cost / row.ftds : 0,
-    conversion_rate: row.clicks > 0 ? row.ftds / row.clicks : 0,
   })).sort((a, b) => b.profit - a.profit);
 
-  const totalPages  = Math.max(1, Math.ceil(tableData.length / PAGE_SIZE));
-  const safePage    = Math.min(page, totalPages);
-  const pageStart   = (safePage - 1) * PAGE_SIZE;
-  const pageData    = tableData.slice(pageStart, pageStart + PAGE_SIZE);
+  const totalPages = Math.max(1, Math.ceil(tableData.length / PAGE_SIZE));
+  const safePage   = Math.min(page, totalPages);
+  const pageStart  = (safePage - 1) * PAGE_SIZE;
+  const pageData   = tableData.slice(pageStart, pageStart + PAGE_SIZE);
 
-  // Determine scatter X axis: prefer clicks if non-zero, otherwise use ftds
-  const hasClicks   = tableData.some(r => r.clicks > 0);
-  const scatterX    = hasClicks ? 'clicks' : 'ftds';
-  const scatterLabel = hasClicks ? 'Clicks' : 'FTDs';
+  /* ── Top 6 affiliates monthly profit line chart ── */
+  const top6Ids = tableData.slice(0, 6).map(a => a.affiliate_id);
 
-  const formatter    = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 2 });
+  const monthlyMap: Record<string, Record<string, number>> = {};
+  data.forEach(d => {
+    const aff = d.affiliate_id || d.affiliate;
+    if (!aff || !d.date || !top6Ids.includes(aff)) return;
+    const raw = String(d.date);
+    const monthKey = raw.length >= 7 ? raw.slice(0, 7) : raw;
+    if (!monthlyMap[monthKey]) monthlyMap[monthKey] = {};
+    const profit = (Number(d.revenue) || 0) - (Number(d.cost) || 0);
+    monthlyMap[monthKey][aff] = (monthlyMap[monthKey][aff] || 0) + profit;
+  });
+
+  const lineData = Object.entries(monthlyMap)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([monthKey, vals]) => {
+      let label = monthKey;
+      try {
+        label = new Date(monthKey + '-02').toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+      } catch {}
+      return { month: label, ...vals };
+    });
+
+  const formatter    = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
   const pctFormatter = new Intl.NumberFormat('en-US', { style: 'percent', maximumFractionDigits: 1 });
 
-  // Page number buttons — show at most 5 pages around current
   const pageButtons = (() => {
     const btns: (number | '…')[] = [];
     const delta = 2;
@@ -59,10 +84,66 @@ export const Affiliates: React.FC<{ data: PerformanceRecord[] }> = ({ data }) =>
         <p>Detailed Affiliate Performance</p>
       </div>
 
+      {/* ── Net Profit by Affiliate (line chart) ── */}
+      <div className="chart-card" style={{ marginBottom: 20, minHeight: lineData.length > 1 ? 360 : 'auto' }}>
+        <div className="chart-title">Net Profit by Affiliate — Top 6</div>
+
+        {lineData.length > 1 ? (
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart data={lineData} margin={{ top: 8, right: 24, bottom: 8, left: 8 }}>
+              <CartesianGrid stroke={gridStroke} strokeDasharray="4 4" opacity={0.5} />
+              <XAxis
+                dataKey="month"
+                stroke={axisStroke}
+                tick={{ fontSize: 11, fill: axisColor }}
+                tickLine={false}
+              />
+              <YAxis
+                stroke={axisStroke}
+                tick={{ fontSize: 11, fill: axisColor }}
+                tickFormatter={(v) => v >= 1_000_000 ? `$${(v / 1_000_000).toFixed(1)}M` : v >= 1_000 ? `$${(v / 1_000).toFixed(0)}k` : `$${v}`}
+                width={60}
+                tickLine={false}
+              />
+              <Tooltip
+                contentStyle={tooltipStyle}
+                formatter={(value: any, name: any) => [formatter.format(Number(value ?? 0)), String(name)]}
+              />
+              <Legend
+                iconType="circle"
+                iconSize={8}
+                wrapperStyle={{ fontSize: '0.75rem', paddingTop: 12 }}
+              />
+              <ReferenceLine y={0} stroke={axisStroke} strokeDasharray="6 3" strokeWidth={1} />
+              {top6Ids.map((id, idx) => (
+                <Line
+                  key={id}
+                  type="monotone"
+                  dataKey={id}
+                  stroke={LINE_COLORS[idx % LINE_COLORS.length]}
+                  strokeWidth={2}
+                  dot={{ r: 4, strokeWidth: 0, fill: LINE_COLORS[idx % LINE_COLORS.length] }}
+                  activeDot={{ r: 6, strokeWidth: 2, stroke: '#ffffff' }}
+                  connectNulls
+                />
+              ))}
+            </LineChart>
+          </ResponsiveContainer>
+        ) : (
+          <div style={{ padding: '24px 0', color: axisColor, fontSize: '0.875rem', textAlign: 'center' }}>
+            {lineData.length === 0
+              ? 'No time-series data available.'
+              : 'Only one time period detected — upload multi-month data to see trend lines.'}
+          </div>
+        )}
+      </div>
+
+      {/* ── Affiliate Table ── */}
       <div className="data-table-container">
         <table className="data-table">
           <thead>
             <tr>
+              <th>#</th>
               <th>Affiliate ID</th>
               <th>Clicks</th>
               <th>FTDs</th>
@@ -76,18 +157,29 @@ export const Affiliates: React.FC<{ data: PerformanceRecord[] }> = ({ data }) =>
           <tbody>
             {pageData.map((row, idx) => (
               <tr key={idx}>
-                <td>{row.affiliate_id}</td>
+                <td style={{ color: axisColor, fontFamily: 'var(--font-mono)', fontSize: '0.75rem' }}>
+                  {String(pageStart + idx + 1).padStart(2, '0')}
+                </td>
+                <td style={{ fontWeight: 500 }}>{row.affiliate_id}</td>
                 <td>{row.clicks.toLocaleString()}</td>
                 <td>{row.ftds.toLocaleString()}</td>
                 <td>{formatter.format(row.revenue)}</td>
                 <td>{formatter.format(row.cost)}</td>
-                <td style={{ color: row.profit >= 0 ? '#10b981' : '#ef4444' }}>{formatter.format(row.profit)}</td>
-                <td style={{ color: row.roi   >= 0 ? '#10b981' : '#ef4444' }}>{pctFormatter.format(row.roi)}</td>
-                <td>{formatter.format(row.cpa)}</td>
+                <td style={{ color: row.profit >= 0 ? 'var(--green)' : 'var(--red)', fontWeight: 600 }}>
+                  {formatter.format(row.profit)}
+                </td>
+                <td style={{ color: row.roi >= 0 ? 'var(--green)' : 'var(--red)', fontWeight: 600 }}>
+                  {pctFormatter.format(row.roi)}
+                </td>
+                <td style={{ color: 'var(--text-primary)' }}>{formatter.format(row.cpa)}</td>
               </tr>
             ))}
             {tableData.length === 0 && (
-              <tr><td colSpan={8} style={{ textAlign: 'center' }}>No affiliate data found.</td></tr>
+              <tr>
+                <td colSpan={9} style={{ textAlign: 'center', color: axisColor, padding: '32px 0' }}>
+                  No affiliate data found.
+                </td>
+              </tr>
             )}
           </tbody>
         </table>
@@ -98,106 +190,24 @@ export const Affiliates: React.FC<{ data: PerformanceRecord[] }> = ({ data }) =>
               Showing {pageStart + 1}–{Math.min(pageStart + PAGE_SIZE, tableData.length)} of {tableData.length} affiliates
             </span>
             <div className="pagination__controls">
-              <button
-                className="pagination__btn"
-                onClick={() => setPage(p => Math.max(1, p - 1))}
-                disabled={safePage === 1}
-              >
+              <button className="pagination__btn" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={safePage === 1}>
                 ‹ Prev
               </button>
-
               {pageButtons.map((btn, i) =>
                 btn === '…'
-                  ? <span key={`ellipsis-${i}`} style={{ color: 'var(--text-muted)', padding: '0 4px' }}>…</span>
+                  ? <span key={`el-${i}`} style={{ color: 'var(--text-muted)', padding: '0 4px' }}>…</span>
                   : <button
                       key={btn}
                       className={`pagination__btn${safePage === btn ? ' active' : ''}`}
                       onClick={() => setPage(btn as number)}
-                    >
-                      {btn}
-                    </button>
+                    >{btn}</button>
               )}
-
-              <button
-                className="pagination__btn"
-                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-                disabled={safePage === totalPages}
-              >
+              <button className="pagination__btn" onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={safePage === totalPages}>
                 Next ›
               </button>
             </div>
           </div>
         )}
-      </div>
-
-      <div className="chart-card" style={{ marginTop: '24px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-          <div className="chart-title" style={{ marginBottom: 0 }}>{scatterLabel} vs Profit</div>
-          <div style={{ display: 'flex', gap: 16, fontSize: 11, color: '#64748b' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-              <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#10b981', display: 'inline-block' }} />
-              Profit
-            </span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-              <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#ef4444', display: 'inline-block' }} />
-              Loss
-            </span>
-          </div>
-        </div>
-        <ResponsiveContainer width="100%" height={380}>
-          <ScatterChart margin={{ top: 20, right: 30, bottom: 30, left: 10 }}>
-            <CartesianGrid stroke="#1e293b" strokeDasharray="4 4" opacity={0.5} />
-            <XAxis
-              type="number"
-              dataKey={scatterX}
-              name={scatterLabel}
-              stroke="#1e293b"
-              tick={{ fontSize: 11, fill: '#536b87' }}
-              tickFormatter={(v) => v >= 1000 ? `${(v / 1000).toFixed(0)}k` : String(v)}
-              label={{ value: scatterLabel, position: 'insideBottom', offset: -16, fill: '#536b87', fontSize: 11 }}
-            />
-            <YAxis
-              type="number"
-              dataKey="profit"
-              name="Profit"
-              stroke="#1e293b"
-              tick={{ fontSize: 11, fill: '#536b87' }}
-              tickFormatter={(val) => val >= 1000000 ? `$${(val / 1000000).toFixed(1)}M` : val >= 1000 ? `$${(val / 1000).toFixed(0)}k` : `$${val}`}
-              width={65}
-            />
-            <ZAxis range={[40, 40]} />
-            <ReferenceLine y={0} stroke="#475569" strokeDasharray="6 3" strokeWidth={1.5} />
-            <Tooltip
-              cursor={{ stroke: '#334155', strokeWidth: 1 }}
-              contentStyle={{ backgroundColor: '#0d1628', borderColor: '#1e293b', color: '#e9eef5', borderRadius: 8, fontSize: 12 }}
-              formatter={(value, name) => {
-                if (name === 'Profit') return [`$${Number(value ?? 0).toLocaleString()}`, 'Profit'];
-                return [Number(value ?? 0).toLocaleString(), String(name ?? '')];
-              }}
-              labelFormatter={() => ''}
-            />
-            <Scatter
-              name="Affiliates"
-              data={tableData}
-              shape={(props: any) => {
-                const { cx, cy, payload } = props;
-                const color = payload.profit >= 0 ? '#10b981' : '#ef4444';
-                return (
-                  <circle
-                    cx={cx}
-                    cy={cy}
-                    r={6}
-                    fill={color}
-                    fillOpacity={0.75}
-                    stroke={color}
-                    strokeWidth={1.5}
-                    strokeOpacity={1}
-                  />
-                );
-              }}
-            />
-          </ScatterChart>
-        </ResponsiveContainer>
       </div>
     </div>
   );

@@ -2,6 +2,7 @@ import React from 'react';
 import { DollarSign, CreditCard, TrendingUp, Percent, UserCheck, Target, Activity, Sliders, Gift, ArrowDownCircle, Users, BarChart2 } from 'lucide-react';
 import { KPICard } from '../components/KPICard';
 import { type PerformanceRecord, processKPIs } from '../utils/kpiEngine';
+import { useChartColors } from '../lib/theme';
 import {
   AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer,
   BarChart, Bar, Cell,
@@ -12,12 +13,12 @@ const COLORS = [
   '#f97316', '#a78bfa', '#34d399', '#fbbf24', '#6366f1',
 ];
 
-const TOOLTIP_STYLE = { backgroundColor: '#0d1628', borderColor: '#1e293b', color: '#e9eef5' };
-
 export const Overview: React.FC<{ data: PerformanceRecord[] }> = ({ data }) => {
   const kpis = processKPIs(data);
-  const usd  = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
-  const pct  = new Intl.NumberFormat('en-US', { style: 'percent', maximumFractionDigits: 1 });
+  const { axisColor, axisStroke, tooltipStyle } = useChartColors();
+
+  const usd = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
+  const pct = new Intl.NumberFormat('en-US', { style: 'percent', maximumFractionDigits: 1 });
 
   /* Time-series aggregation */
   const timeMap: Record<string, { date: string; revenue: number; cost: number; profit: number }> = {};
@@ -43,7 +44,7 @@ export const Overview: React.FC<{ data: PerformanceRecord[] }> = ({ data }) => {
     .sort((a, b) => b.profit - a.profit)
     .slice(0, 10);
 
-  /* Revenue by country — all countries sorted by value */
+  /* Revenue by country */
   const countryMap: Record<string, number> = {};
   data.forEach(d => {
     if (!d.country) return;
@@ -63,23 +64,23 @@ export const Overview: React.FC<{ data: PerformanceRecord[] }> = ({ data }) => {
       {/* ── Financial Metrics ── */}
       <div className="kpi-group-label">Financial</div>
       <div className="kpi-grid" style={{ marginBottom: 20 }}>
-        <KPICard label="FTD"             value={kpis.ftds.toLocaleString()}            color="#ec4899" icon={<UserCheck      size={15} />} />
-        <KPICard label="Deposits Sum"    value={usd.format(kpis.revenue)}              color="#00d4ff" icon={<DollarSign     size={15} />} />
-        <KPICard label="Casino NGR"      value={usd.format(kpis.casino_real_ngr)}      color="#10b981" icon={<TrendingUp     size={15} />} />
-        <KPICard label="SB NGR"          value={usd.format(kpis.sb_real_ngr)}          color="#34d399" icon={<Activity       size={15} />} />
-        <KPICard label="Partner Income"  value={usd.format(kpis.cost)}                 color="#f0b429" icon={<CreditCard     size={15} />} />
-        <KPICard label="Flats & Adj."    value={usd.format(kpis.flats_and_adjustments)} color="#818cf8" icon={<Sliders      size={15} />} />
+        <KPICard label="FTD"            value={kpis.ftds.toLocaleString()}            color="#ec4899" icon={<UserCheck     size={15} />} />
+        <KPICard label="Deposits Sum"   value={usd.format(kpis.revenue)}              color="#00d4ff" icon={<DollarSign    size={15} />} />
+        <KPICard label="Casino NGR"     value={usd.format(kpis.casino_real_ngr)}      color="#10b981" icon={<TrendingUp    size={15} />} />
+        <KPICard label="SB NGR"         value={usd.format(kpis.sb_real_ngr)}          color="#34d399" icon={<Activity      size={15} />} />
+        <KPICard label="Partner Income" value={usd.format(kpis.cost)}                 color="#f0b429" icon={<CreditCard    size={15} />} />
+        <KPICard label="Flats & Adj."   value={usd.format(kpis.flats_and_adjustments)} color="#818cf8" icon={<Sliders     size={15} />} />
       </div>
 
       {/* ── Performance Ratios ── */}
       <div className="kpi-group-label">Performance</div>
       <div className="kpi-grid" style={{ marginBottom: 24 }}>
-        <KPICard label="ROI"      value={kpis.roi.toFixed(1)}          color="#818cf8" icon={<Percent         size={15} />} />
-        <KPICard label="% Bonus"  value={pct.format(kpis.bonus_pct)}   color="#f97316" icon={<Gift            size={15} />} />
+        <KPICard label="ROI"       value={kpis.roi.toFixed(1)}          color="#818cf8" icon={<Percent         size={15} />} />
+        <KPICard label="% Bonus"   value={pct.format(kpis.bonus_pct)}   color="#f97316" icon={<Gift            size={15} />} />
         <KPICard label="% Cashout" value={pct.format(kpis.cashout_pct)} color="#ef4444" icon={<ArrowDownCircle size={15} />} />
-        <KPICard label="ADPU"     value={usd.format(kpis.adpu)}        color="#00d4ff" icon={<Users           size={15} />} />
-        <KPICard label="ARPU"     value={usd.format(kpis.arpu)}        color="#10b981" icon={<BarChart2       size={15} />} />
-        <KPICard label="ECPA"     value={usd.format(kpis.ecpa)}        color="#f97316" icon={<Target          size={15} />} />
+        <KPICard label="ADPU"      value={usd.format(kpis.adpu)}        color="#00d4ff" icon={<Users           size={15} />} />
+        <KPICard label="ARPU"      value={usd.format(kpis.arpu)}        color="#10b981" icon={<BarChart2       size={15} />} />
+        <KPICard label="ECPA"      value={usd.format(kpis.ecpa)}        color="#f97316" icon={<Target          size={15} />} />
       </div>
 
       <div className="chart-grid cols-2">
@@ -89,21 +90,21 @@ export const Overview: React.FC<{ data: PerformanceRecord[] }> = ({ data }) => {
             <AreaChart data={timeData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
               <defs>
                 <linearGradient id="gRev"    x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%"  stopColor="#00d4ff" stopOpacity={0.7} />
+                  <stop offset="5%"  stopColor="#00d4ff" stopOpacity={0.5} />
                   <stop offset="95%" stopColor="#00d4ff" stopOpacity={0}   />
                 </linearGradient>
                 <linearGradient id="gCost"   x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%"  stopColor="#f0b429" stopOpacity={0.7} />
+                  <stop offset="5%"  stopColor="#f0b429" stopOpacity={0.5} />
                   <stop offset="95%" stopColor="#f0b429" stopOpacity={0}   />
                 </linearGradient>
                 <linearGradient id="gProfit" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%"  stopColor="#10b981" stopOpacity={0.7} />
+                  <stop offset="5%"  stopColor="#10b981" stopOpacity={0.5} />
                   <stop offset="95%" stopColor="#10b981" stopOpacity={0}   />
                 </linearGradient>
               </defs>
-              <XAxis dataKey="date"   stroke="#2d3e52" tick={{ fontSize: 11, fill: '#536b87' }} />
-              <YAxis                  stroke="#2d3e52" tick={{ fontSize: 11, fill: '#536b87' }} />
-              <Tooltip contentStyle={TOOLTIP_STYLE} />
+              <XAxis dataKey="date"  stroke={axisStroke} tick={{ fontSize: 11, fill: axisColor }} />
+              <YAxis                 stroke={axisStroke} tick={{ fontSize: 11, fill: axisColor }} />
+              <Tooltip contentStyle={tooltipStyle} />
               <Area type="monotone" dataKey="revenue" stroke="#00d4ff" strokeWidth={1.5} fillOpacity={1} fill="url(#gRev)"    />
               <Area type="monotone" dataKey="cost"    stroke="#f0b429" strokeWidth={1.5} fillOpacity={1} fill="url(#gCost)"   />
               <Area type="monotone" dataKey="profit"  stroke="#10b981" strokeWidth={1.5} fillOpacity={1} fill="url(#gProfit)" />
@@ -123,20 +124,20 @@ export const Overview: React.FC<{ data: PerformanceRecord[] }> = ({ data }) => {
               >
                 <XAxis
                   type="number"
-                  stroke="#2d3e52"
-                  tick={{ fontSize: 9, fill: '#536b87' }}
-                  tickFormatter={(v) => v >= 1000000 ? `$${(v / 1000000).toFixed(0)}M` : v >= 1000 ? `$${(v / 1000).toFixed(0)}k` : `$${v}`}
+                  stroke={axisStroke}
+                  tick={{ fontSize: 9, fill: axisColor }}
+                  tickFormatter={(v) => v >= 1_000_000 ? `$${(v / 1_000_000).toFixed(0)}M` : v >= 1_000 ? `$${(v / 1_000).toFixed(0)}k` : `$${v}`}
                   width={50}
                 />
                 <YAxis
                   type="category"
                   dataKey="name"
-                  stroke="#2d3e52"
-                  tick={{ fontSize: 9, fill: '#94a3b8' }}
+                  stroke={axisStroke}
+                  tick={{ fontSize: 9, fill: axisColor }}
                   width={28}
                 />
                 <Tooltip
-                  contentStyle={TOOLTIP_STYLE}
+                  contentStyle={tooltipStyle}
                   formatter={(value) => [`$${Number(value ?? 0).toLocaleString()}`, 'Deposits Sum']}
                   cursor={{ fill: 'rgba(255,255,255,0.04)' }}
                 />
@@ -151,13 +152,34 @@ export const Overview: React.FC<{ data: PerformanceRecord[] }> = ({ data }) => {
         </div>
       </div>
 
-      <div className="chart-card" style={{ marginTop: 20 }}>
+      <div className="chart-card" style={{ marginTop: 16 }}>
         <div className="chart-title">Top 10 Affiliates by Profit</div>
-        <ResponsiveContainer width="100%" height={310}>
-          <BarChart data={topAffiliates} layout="vertical" margin={{ left: 20 }}>
-            <XAxis type="number"   stroke="#2d3e52" tick={{ fontSize: 11, fill: '#536b87' }} />
-            <YAxis type="category" dataKey="affiliate_id" stroke="#2d3e52" tick={{ fontSize: 11, fill: '#536b87' }} width={100} />
-            <Tooltip cursor={{ fill: 'rgba(255,255,255,0.04)' }} contentStyle={TOOLTIP_STYLE} />
+        <ResponsiveContainer width="100%" height={340}>
+          <BarChart
+            data={topAffiliates}
+            layout="vertical"
+            margin={{ top: 4, right: 20, bottom: 4, left: 4 }}
+            barSize={14}
+          >
+            <XAxis
+              type="number"
+              stroke={axisStroke}
+              tick={{ fontSize: 11, fill: axisColor }}
+              tickFormatter={(v) => v >= 1_000_000 ? `$${(v / 1_000_000).toFixed(1)}M` : v >= 1_000 ? `$${(v / 1_000).toFixed(0)}k` : `$${v}`}
+            />
+            <YAxis
+              type="category"
+              dataKey="affiliate_id"
+              stroke={axisStroke}
+              tick={{ fontSize: 11, fill: '#e9eef5' }}
+              width={70}
+              tickLine={false}
+            />
+            <Tooltip
+              cursor={{ fill: 'rgba(255,255,255,0.04)' }}
+              contentStyle={tooltipStyle}
+              formatter={(value) => [`$${Number(value ?? 0).toLocaleString()}`, 'Profit']}
+            />
             <Bar dataKey="profit" radius={[0, 4, 4, 0]}>
               {topAffiliates.map((entry, idx) => (
                 <Cell key={`cell-${idx}`} fill={entry.profit >= 0 ? '#00d4ff' : '#ef4444'} />

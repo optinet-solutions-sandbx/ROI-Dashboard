@@ -59,6 +59,100 @@
   --r-xl: 20px;
 }
 
+/* ─── Light Mode ─── */
+[data-theme="light"] {
+  --bg:           #f0f4f9;
+  --bg-elevated:  #e6ecf4;
+  --bg-card:      #ffffff;
+  --bg-hover:     #f5f8fc;
+  --bg-input:     #edf2f7;
+  --bg-stripe:    rgba(0, 0, 0, 0.02);
+
+  --border:       rgba(0, 0, 0, 0.08);
+  --border-hover: rgba(0, 0, 0, 0.15);
+  --border-gold:  rgba(240, 180, 41, 0.5);
+  --border-light: rgba(0, 0, 0, 0.05);
+
+  --text-primary:   #0f1923;
+  --text-secondary: #4b6280;
+  --text-muted:     #8499b0;
+  --text-dim:       #aab8c8;
+
+  --shadow-card:  0 2px 12px rgba(0, 0, 0, 0.08);
+  --shadow-hover: 0 8px 32px rgba(0, 0, 0, 0.14);
+  --shadow-glow:  0 0 40px rgba(240, 180, 41, 0.1);
+}
+
+[data-theme="light"] body::before {
+  background-image: radial-gradient(rgba(0, 0, 0, 0.04) 1px, transparent 1px);
+}
+
+[data-theme="light"] .sidebar::before {
+  background: radial-gradient(ellipse at 50% -20%, rgba(240, 180, 41, 0.1) 0%, transparent 70%);
+}
+
+[data-theme="light"] .chart-card::before {
+  background: linear-gradient(90deg, transparent, rgba(0,0,0,0.04), transparent);
+}
+
+/* ─── Theme Toggle Button ─── */
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 10px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  color: var(--text-secondary);
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.18s;
+  margin-top: 8px;
+}
+
+.theme-toggle:hover {
+  background: var(--bg-hover);
+  border-color: var(--border-hover);
+  color: var(--text-primary);
+}
+
+.theme-toggle__track {
+  position: relative;
+  width: 32px;
+  height: 18px;
+  background: var(--bg-hover);
+  border: 1px solid var(--border-hover);
+  border-radius: 99px;
+  flex-shrink: 0;
+  margin-left: auto;
+  transition: background 0.22s;
+}
+
+.theme-toggle__track.on {
+  background: var(--gold-dim);
+  border-color: var(--border-gold);
+}
+
+.theme-toggle__thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  transition: transform 0.22s, background 0.22s;
+}
+
+.theme-toggle__track.on .theme-toggle__thumb {
+  transform: translateX(14px);
+  background: var(--gold);
+}
+
 /* ─── Reset ─── */
 *, *::before, *::after {
   box-sizing: border-box;

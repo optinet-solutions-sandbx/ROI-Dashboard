@@ -1,8 +1,9 @@
 import React from 'react';
 import {
   UploadCloud, LayoutDashboard, Users, Megaphone,
-  Lightbulb, Table, BarChart3, X,
+  Lightbulb, Table, BarChart3, X, Sun, Moon,
 } from 'lucide-react';
+import { useTheme } from '../lib/theme';
 
 interface SidebarProps {
   onFileUpload: (file: File) => void;
@@ -14,16 +15,19 @@ interface SidebarProps {
 }
 
 const TABS = [
-  { id: 'Overview',   label: 'Overview',   Icon: LayoutDashboard },
-  { id: 'Affiliates', label: 'Affiliates',  Icon: Users           },
-  { id: 'Campaigns',  label: 'Campaigns',   Icon: Megaphone       },
-  { id: 'Insights',   label: 'Insights',    Icon: Lightbulb       },
-  { id: 'Data',       label: 'Raw Data',    Icon: Table           },
+  { id: 'Overview',   label: 'Overview',  Icon: LayoutDashboard },
+  { id: 'Affiliates', label: 'Affiliates', Icon: Users           },
+  { id: 'Campaigns',  label: 'Campaigns',  Icon: Megaphone       },
+  { id: 'Insights',   label: 'Insights',   Icon: Lightbulb       },
+  { id: 'Data',       label: 'Raw Data',   Icon: Table           },
 ];
 
 export const Sidebar: React.FC<SidebarProps> = ({
   onFileUpload, activeTab, setActiveTab, isOpen, onClose, recordCount = 0,
 }) => {
+  const { theme, toggleTheme } = useTheme();
+  const isLight = theme === 'light';
+
   const handleDragOver = (e: React.DragEvent) => e.preventDefault();
 
   const handleDrop = (e: React.DragEvent) => {
@@ -61,11 +65,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {/* Upload */}
       <div className="sidebar__upload-section">
         <span className="sidebar__upload-label">Data Source</span>
-        <div
-          className="upload-dropzone"
-          onDragOver={handleDragOver}
-          onDrop={handleDrop}
-        >
+        <div className="upload-dropzone" onDragOver={handleDragOver} onDrop={handleDrop}>
           <div className="upload-dropzone__icon">
             <UploadCloud size={24} />
           </div>
@@ -75,12 +75,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <label className="upload-btn">
             <UploadCloud size={12} />
             Browse File
-            <input
-              type="file"
-              accept=".xlsx,.xls,.csv"
-              hidden
-              onChange={handleFileChange}
-            />
+            <input type="file" accept=".xlsx,.xls,.csv" hidden onChange={handleFileChange} />
           </label>
         </div>
 
@@ -105,6 +100,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
             {label}
           </button>
         ))}
+
+        {/* Theme toggle */}
+        <div className="sidebar__nav-label" style={{ marginTop: 16 }}>Appearance</div>
+        <button className="theme-toggle" onClick={toggleTheme} aria-label="Toggle theme">
+          {isLight ? <Sun size={14} /> : <Moon size={14} />}
+          {isLight ? 'Light Mode' : 'Dark Mode'}
+          <div className={`theme-toggle__track${isLight ? ' on' : ''}`}>
+            <div className="theme-toggle__thumb" />
+          </div>
+        </button>
       </nav>
 
       {/* Footer */}
