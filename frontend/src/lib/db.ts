@@ -41,3 +41,13 @@ export async function replaceRecords(records: PerformanceRecord[]): Promise<void
     if (error) throw error
   }
 }
+
+/** Append new records to the existing dataset without deleting anything */
+export async function appendRecords(records: PerformanceRecord[]): Promise<void> {
+  const BATCH_SIZE = 500
+  for (let i = 0; i < records.length; i += BATCH_SIZE) {
+    const batch = records.slice(i, i + BATCH_SIZE).map(toRow)
+    const { error } = await supabase.from(TABLE).insert(batch)
+    if (error) throw error
+  }
+}

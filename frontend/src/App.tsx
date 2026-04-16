@@ -8,7 +8,24 @@ import { Affiliates } from './pages/Affiliates';
 import { Campaigns } from './pages/Campaigns';
 import { Insights } from './pages/Insights';
 import { Data } from './pages/Data';
-import { fetchRecords, replaceRecords } from './lib/db';
+import { fetchRecords, appendRecords } from './lib/db';
+
+const LS_KEY = 'roi-dashboard-data';
+
+function saveToLocalStorage(records: PerformanceRecord[]) {
+  try { localStorage.setItem(LS_KEY, JSON.stringify(records)); }
+  catch (e) { console.warn('localStorage save failed:', e); }
+}
+
+function loadFromLocalStorage(): PerformanceRecord[] {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch (e) {
+    console.warn('localStorage load failed:', e);
+    return [];
+  }
+}
 
 const TABS = [
   { id: 'Overview',   label: 'Overview',   Icon: LayoutDashboard },
@@ -19,27 +36,33 @@ const TABS = [
 ];
 
 function App() {
-  const [data, setData]               = useState<PerformanceRecord[]>([]);
+  // Initialize directly from localStorage — data is available instantly on refresh
+  const [data, setData]               = useState<PerformanceRecord[]>(() => loadFromLocalStorage());
   const [activeTab, setActiveTab]     = useState('Overview');
   const [loading, setLoading]         = useState(false);
   const [isDraggingOver, setDragging] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  // Load persisted data from Supabase on first render
+  // Sync with Supabase in the background (updates localStorage if DB has newer data)
   useEffect(() => {
-    setLoading(true);
     fetchRecords()
-      .then(records => { if (records.length > 0) setData(records); })
-      .catch(err => console.error('Failed to load from Supabase:', err))
-      .finally(() => setLoading(false));
+      .then(records => {
+        if (records.length > 0) {
+          setData(records);
+          saveToLocalStorage(records);
+        }
+      })
+      .catch(err => console.error('Supabase sync failed (using local data):', err));
   }, []);
 
   const handleFileUpload = async (file: File) => {
     try {
       setLoading(true);
       const parsedData = await parseExcelFile(file);
-      setData(parsedData);
-      await replaceRecords(parsedData);
+      const merged = [...data, ...parsedData];
+      setData(merged);
+      saveToLocalStorage(merged);
+      await appendRecords(parsedData);
     } catch (error) {
       console.error('Error parsing or saving file:', error);
       alert('Failed to process file. Check the console for details.');
