@@ -7,7 +7,10 @@ import {
   BarChart, Bar, Cell, PieChart, Pie, Legend,
 } from 'recharts';
 
-const COLORS = ['#00d4ff', '#818cf8', '#10b981', '#f0b429', '#ef4444', '#ec4899'];
+const COLORS = [
+  '#00d4ff', '#818cf8', '#10b981', '#f0b429', '#ef4444', '#ec4899',
+  '#f97316', '#a78bfa', '#34d399', '#fbbf24', '#6366f1',
+];
 
 const TOOLTIP_STYLE = { backgroundColor: '#0d1628', borderColor: '#1e293b', color: '#e9eef5' };
 
@@ -40,13 +43,21 @@ export const Overview: React.FC<{ data: PerformanceRecord[] }> = ({ data }) => {
     .sort((a, b) => b.profit - a.profit)
     .slice(0, 10);
 
-  /* Revenue by country */
+  /* Revenue by country — top 10 + "Other" */
   const countryMap: Record<string, number> = {};
   data.forEach(d => {
     if (!d.country) return;
     countryMap[d.country] = (countryMap[d.country] || 0) + (Number(d.revenue) || 0);
   });
-  const countryData = Object.keys(countryMap).map(key => ({ name: key, value: countryMap[key] }));
+  const countryData = (() => {
+    const sorted = Object.keys(countryMap)
+      .map(key => ({ name: key, value: countryMap[key] }))
+      .sort((a, b) => b.value - a.value);
+    const top = sorted.slice(0, 10);
+    const otherVal = sorted.slice(10).reduce((s, c) => s + c.value, 0);
+    if (otherVal > 0) top.push({ name: 'Other', value: otherVal });
+    return top;
+  })();
 
   return (
     <div>
@@ -95,24 +106,36 @@ export const Overview: React.FC<{ data: PerformanceRecord[] }> = ({ data }) => {
 
         <div className="chart-card">
           <div className="chart-title">Revenue by Country</div>
-          <ResponsiveContainer width="100%" height={310}>
+          <ResponsiveContainer width="100%" height={220}>
             <PieChart>
               <Pie
                 data={countryData}
-                innerRadius={70}
-                outerRadius={110}
-                paddingAngle={4}
+                innerRadius={60}
+                outerRadius={95}
+                paddingAngle={3}
                 dataKey="value"
                 strokeWidth={0}
+                label={({ name, percent }) => percent > 0.04 ? `${name} ${(percent * 100).toFixed(0)}%` : ''}
+                labelLine={false}
               >
                 {countryData.map((_, idx) => (
                   <Cell key={`cell-${idx}`} fill={COLORS[idx % COLORS.length]} />
                 ))}
               </Pie>
-              <Tooltip contentStyle={TOOLTIP_STYLE} />
-              <Legend verticalAlign="bottom" height={36} iconType="circle" />
+              <Tooltip
+                contentStyle={TOOLTIP_STYLE}
+                formatter={(value: number) => [`$${value.toLocaleString()}`, 'Revenue']}
+              />
             </PieChart>
           </ResponsiveContainer>
+          <div className="country-legend">
+            {countryData.map((entry, idx) => (
+              <div key={entry.name} className="country-legend__item">
+                <span className="country-legend__dot" style={{ background: COLORS[idx % COLORS.length] }} />
+                <span className="country-legend__name">{entry.name}</span>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 

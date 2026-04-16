@@ -87,7 +87,13 @@ body {
   flex-shrink: 0;
   z-index: 100;
   overflow-y: auto;
+  scrollbar-width: none;       /* Firefox */
+  -ms-overflow-style: none;    /* IE / Edge */
   transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebar::-webkit-scrollbar {
+  display: none;               /* Chrome / Safari / WebKit */
 }
 
 .sidebar__logo {
@@ -549,7 +555,7 @@ body {
   border: 1px solid var(--border);
   border-radius: var(--r);
   padding: 20px;
-  height: 400px;
+  min-height: 360px;
 }
 
 .chart-title {
@@ -559,6 +565,98 @@ body {
   color: var(--text-primary);
   margin-bottom: 16px;
   letter-spacing: -0.01em;
+}
+
+/* ─── Country Legend (Revenue by Country chart) ─── */
+.country-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  padding: 10px 4px 0;
+  max-height: 90px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+.country-legend::-webkit-scrollbar { width: 4px; }
+.country-legend::-webkit-scrollbar-track { background: transparent; }
+.country-legend::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+.country-legend__item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.country-legend__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.country-legend__name {
+  color: var(--text-secondary);
+}
+
+/* ─── Pagination ─── */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-top: 1px solid var(--border);
+  background: var(--bg-elevated);
+  border-radius: 0 0 var(--r) var(--r);
+}
+
+.pagination__info {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+}
+
+.pagination__controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pagination__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 32px;
+  padding: 0 10px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  border-radius: var(--r-sm);
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.18s;
+}
+
+.pagination__btn:hover:not(:disabled) {
+  border-color: var(--border-hover);
+  color: var(--text-primary);
+}
+
+.pagination__btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.pagination__btn.active {
+  background: var(--gold-dim);
+  border-color: var(--border-gold);
+  color: var(--gold);
 }
 
 /* ─── Data Table ─── */
