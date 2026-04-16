@@ -62,10 +62,13 @@ function App() {
       const merged = [...data, ...parsedData];
       setData(merged);
       saveToLocalStorage(merged);
-      await appendRecords(parsedData);
+      // Supabase sync is best-effort — never block or alert on its failure
+      appendRecords(parsedData).catch(err =>
+        console.warn('Supabase sync failed, data saved locally:', err)
+      );
     } catch (error) {
-      console.error('Error parsing or saving file:', error);
-      alert('Failed to process file. Check the console for details.');
+      console.error('Error parsing file:', error);
+      alert('Failed to read file. Make sure it is a valid Excel or CSV file.');
     } finally {
       setLoading(false);
     }
