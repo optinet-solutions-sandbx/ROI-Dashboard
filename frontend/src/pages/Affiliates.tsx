@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Search, X } from 'lucide-react';
+import { Search, X, Download } from 'lucide-react';
 import type { PerformanceRecord } from '../utils/kpiEngine';
+import { downloadCSV } from '../utils/exportUtils';
 import { useChartColors } from '../lib/theme';
 import {
   LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer,
@@ -85,6 +86,21 @@ export const Affiliates: React.FC<{ data: PerformanceRecord[] }> = ({ data }) =>
   const formatter    = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
   const pctFormatter = new Intl.NumberFormat('en-US', { style: 'percent', maximumFractionDigits: 1 });
 
+  const handleExport = () => {
+    const rows = tableData.map(row => ({
+      'Affiliate ID':   row.affiliate_id,
+      'Affiliate Name': row.affiliate_name || '',
+      'Clicks':         row.clicks,
+      'FTDs':           row.ftds,
+      'Revenue':        row.revenue,
+      'Cost':           row.cost,
+      'Profit':         row.profit,
+      'ROI (%)':        (row.roi * 100).toFixed(2),
+      'CPA':            row.cpa.toFixed(2),
+    }));
+    downloadCSV(rows, 'roi-affiliates-export.csv');
+  };
+
   const pageButtons = (() => {
     const btns: (number | '…')[] = [];
     const delta = 2;
@@ -98,9 +114,30 @@ export const Affiliates: React.FC<{ data: PerformanceRecord[] }> = ({ data }) =>
 
   return (
     <div>
-      <div className="header">
-        <h1>Affiliates</h1>
-        <p>Detailed Affiliate Performance</p>
+      <div className="header" style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
+        <div>
+          <h1>Affiliates</h1>
+          <p>Detailed Affiliate Performance</p>
+        </div>
+        <button
+          onClick={handleExport}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6,
+            padding: '8px 14px',
+            borderRadius: 8,
+            border: '1px solid var(--border)',
+            backgroundColor: 'var(--bg-card)',
+            color: 'var(--text-primary)',
+            fontSize: '0.8rem',
+            cursor: 'pointer',
+            fontFamily: 'var(--font-body)',
+          }}
+        >
+          <Download size={14} />
+          Export CSV
+        </button>
       </div>
 
       {/* ── Net Profit by Affiliate (line chart) ── */}

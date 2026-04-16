@@ -12,6 +12,10 @@ const COLUMN_ALIASES: Record<string, string> = {
   ftd:           'ftds',      // ROI export: "FTD" → ftds
   deposits_sum:  'revenue',
   partner_income: 'cost',
+  company_name:  'affiliate_name',
+  fd_date:       'date',
+  flat_amt:      'flats_and_adjustments',
+  flats_and_adjustments_col: 'flats_and_adjustments',
 };
 
 export const normalizeColumnName = (name: string): string => {

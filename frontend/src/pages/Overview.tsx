@@ -1,7 +1,8 @@
 import React from 'react';
-import { Euro, CreditCard, TrendingUp, Percent, UserCheck, Target, Activity, Sliders, Gift, ArrowDownCircle, Users, BarChart2 } from 'lucide-react';
+import { Euro, CreditCard, TrendingUp, Percent, UserCheck, Target, Activity, Sliders, Gift, ArrowDownCircle, Users, BarChart2, Download } from 'lucide-react';
 import { KPICard } from '../components/KPICard';
 import { type PerformanceRecord, processKPIs } from '../utils/kpiEngine';
+import { downloadCSV } from '../utils/exportUtils';
 import { useChartColors } from '../lib/theme';
 import {
   AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer,
@@ -16,6 +17,11 @@ const COLORS = [
 export const Overview: React.FC<{ data: PerformanceRecord[] }> = ({ data }) => {
   const kpis = processKPIs(data);
   const { axisColor, axisStroke, tooltipStyle } = useChartColors();
+
+  const handleExport = () => {
+    const rows = data.map(r => ({ ...r }));
+    downloadCSV(rows, 'roi-overview-export.csv');
+  };
 
   const usd = new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 });
   const pct = new Intl.NumberFormat('en-US', { style: 'percent', maximumFractionDigits: 1 });
@@ -56,9 +62,30 @@ export const Overview: React.FC<{ data: PerformanceRecord[] }> = ({ data }) => {
 
   return (
     <div>
-      <div className="header">
-        <h1>Overview</h1>
-        <p>Key Performance Indicators</p>
+      <div className="header" style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
+        <div>
+          <h1>Overview</h1>
+          <p>Key Performance Indicators</p>
+        </div>
+        <button
+          onClick={handleExport}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6,
+            padding: '8px 14px',
+            borderRadius: 8,
+            border: '1px solid var(--border)',
+            backgroundColor: 'var(--bg-card)',
+            color: 'var(--text-primary)',
+            fontSize: '0.8rem',
+            cursor: 'pointer',
+            fontFamily: 'var(--font-body)',
+          }}
+        >
+          <Download size={14} />
+          Export CSV
+        </button>
       </div>
 
       {/* ── Financial Metrics ── */}

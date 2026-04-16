@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { BarChart3, LayoutDashboard, Users, Megaphone, Lightbulb, Table, Menu } from 'lucide-react';
 import { Sidebar } from './components/Sidebar';
 import { parseExcelFile } from './utils/excelParser';
@@ -9,6 +9,7 @@ import { Campaigns } from './pages/Campaigns';
 import { Insights } from './pages/Insights';
 import { Data } from './pages/Data';
 import { fetchRecords, replaceRecords } from './lib/db';
+import type { GlobalFilters, FilterOptions } from './types/filters';
 
 const LS_KEY = 'roi-dashboard-data';
 
@@ -42,6 +43,15 @@ function App() {
   const [loading, setLoading]         = useState(false);
   const [isDraggingOver, setDragging] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [filters, setFilters]         = useState<GlobalFilters>({
+    searchTerm: '',
+    dateRange: { start: '', end: '' },
+    selectedBrands: [],
+    selectedAMs: [],
+    selectedCountries: [],
+    selectedSources: [],
+    selectedPeriods: [],
+  });
 
   // Sync with Supabase in the background (updates localStorage if DB has newer data)
   useEffect(() => {
@@ -90,6 +100,54 @@ function App() {
     handleFileUpload(file);
   };
 
+  const filteredData = useMemo(() => {
+    let result = data;
+
+    // Text search: affiliate_id or affiliate_name
+    if (filters.searchTerm.trim()) {
+      const q = filters.searchTerm.trim().toLowerCase();
+      result = result.filter(r =>
+        String(r.affiliate_id   ?? '').toLowerCase().includes(q) ||
+        String(r.affiliate_name ?? '').toLowerCase().includes(q)
+      );
+    }
+
+    // Date range filter — expects ISO date strings (YYYY-MM-DD); records with no date are excluded when filter is active
+    if (filters.dateRange.start) {
+      result = result.filter(r => r.date != null && String(r.date) >= filters.dateRange.start);
+    }
+    if (filters.dateRange.end) {
+      result = result.filter(r => r.date != null && String(r.date) <= filters.dateRange.end);
+    }
+
+    // Multi-select filters (OR within category, AND between categories)
+    if (filters.selectedBrands.length > 0) {
+      result = result.filter(r => filters.selectedBrands.includes(String(r.brand ?? '')));
+    }
+    if (filters.selectedAMs.length > 0) {
+      result = result.filter(r => filters.selectedAMs.includes(String(r.am ?? '')));
+    }
+    if (filters.selectedCountries.length > 0) {
+      result = result.filter(r => filters.selectedCountries.includes(String(r.country ?? '')));
+    }
+    if (filters.selectedSources.length > 0) {
+      result = result.filter(r => filters.selectedSources.includes(String(r.source ?? '')));
+    }
+    if (filters.selectedPeriods.length > 0) {
+      result = result.filter(r => filters.selectedPeriods.includes(String(r.period ?? '')));
+    }
+
+    return result;
+  }, [data, filters]);
+
+  const filterOptions = useMemo<FilterOptions>(() => ({
+    brands:    [...new Set(data.map(r => String(r.brand    ?? '')).filter(Boolean))].sort(),
+    ams:       [...new Set(data.map(r => String(r.am       ?? '')).filter(Boolean))].sort(),
+    countries: [...new Set(data.map(r => String(r.country  ?? '')).filter(Boolean))].sort(),
+    sources:   [...new Set(data.map(r => String(r.source   ?? '')).filter(Boolean))].sort(),
+    periods:   [...new Set(data.map(r => String(r.period   ?? '')).filter(Boolean))].sort(),
+  }), [data]);
+
   const switchTab = (tab: string) => { setActiveTab(tab); setSidebarOpen(false); };
 
   return (
@@ -118,6 +176,10 @@ function App() {
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
         recordCount={data.length}
+        filteredCount={filteredData.length}
+        filters={filters}
+        filterOptions={filterOptions}
+        onFiltersChange={setFilters}
       />
 
       {/* ── Main Content ── */}
@@ -157,11 +219,11 @@ function App() {
 
         {!loading && data.length > 0 && (
           <div className="fade-in">
-            {activeTab === 'Overview'   && <Overview   data={data} />}
-            {activeTab === 'Affiliates' && <Affiliates data={data} />}
-            {activeTab === 'Campaigns'  && <Campaigns  data={data} />}
-            {activeTab === 'Insights'   && <Insights   data={data} />}
-            {activeTab === 'Data'       && <Data       data={data} />}
+            {activeTab === 'Overview'   && <Overview   data={filteredData} />}
+            {activeTab === 'Affiliates' && <Affiliates data={filteredData} />}
+            {activeTab === 'Campaigns'  && <Campaigns  data={filteredData} />}
+            {activeTab === 'Insights'   && <Insights   data={filteredData} />}
+            {activeTab === 'Data'       && <Data       data={filteredData} />}
           </div>
         )}
       </main>

@@ -9,6 +9,14 @@ export interface PerformanceRecord {
   ftds?: number;
   revenue?: number;
   cost?: number;
+  // Filter support fields
+  brand?: string;
+  am?: string;
+  source?: string;
+  period?: string | number;
+  casino_real_ngr?: number;
+  sb_real_ngr?: number;
+  flats_and_adjustments?: number;
   [key: string]: any;
 }
 
@@ -42,6 +50,7 @@ export const processKPIs = (data: PerformanceRecord[]) => {
   const totalSpend = totals.cost + totals.flats_and_adjustments;
   const totalNgr   = totals.casino_real_ngr + totals.sb_real_ngr;
 
+  // ROI = NGR / (Partner Income + Flat Amounts)
   const roi             = totalSpend > 0  ? totalNgr / totalSpend         : 0;
   const cpa             = totals.ftds > 0 ? totals.cost / totals.ftds     : 0;
   const conversion_rate = totals.clicks > 0 ? totals.ftds / totals.clicks : 0;
