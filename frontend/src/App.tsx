@@ -8,7 +8,7 @@ import { Affiliates } from './pages/Affiliates';
 import { Campaigns } from './pages/Campaigns';
 import { Insights } from './pages/Insights';
 import { Data } from './pages/Data';
-import { fetchRecords, appendRecords } from './lib/db';
+import { fetchRecords, replaceRecords } from './lib/db';
 
 const LS_KEY = 'roi-dashboard-data';
 
@@ -59,11 +59,10 @@ function App() {
     try {
       setLoading(true);
       const parsedData = await parseExcelFile(file);
-      const merged = [...data, ...parsedData];
-      setData(merged);
-      saveToLocalStorage(merged);
+      setData(parsedData);
+      saveToLocalStorage(parsedData);
       // Supabase sync is best-effort — never block or alert on its failure
-      appendRecords(parsedData).catch(err =>
+      replaceRecords(parsedData).catch((err: unknown) =>
         console.warn('Supabase sync failed, data saved locally:', err)
       );
     } catch (error) {
