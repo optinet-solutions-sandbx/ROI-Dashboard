@@ -20,11 +20,9 @@ const inputStyle: React.CSSProperties = {
 
 export const Data: React.FC<{ data: PerformanceRecord[] }> = ({ data }) => {
   const [page, setPage] = useState(0);
-  const [searchAffiliate, setSearchAffiliate] = useState('');
-  const [searchCountry, setSearchCountry] = useState('');
-  const [searchCampaign, setSearchCampaign] = useState('');
+  const [search, setSearch] = useState('');
 
-  useEffect(() => { setPage(0); }, [data, searchAffiliate, searchCountry, searchCampaign]);
+  useEffect(() => { setPage(0); }, [data, search]);
 
   if (data.length === 0) {
     return (
@@ -38,14 +36,12 @@ export const Data: React.FC<{ data: PerformanceRecord[] }> = ({ data }) => {
   }
 
   const filteredData = data.filter(row => {
+    if (!search) return true;
+    const q        = search.toLowerCase();
     const affId    = String(row.affiliate_id ?? row.affiliate ?? '').toLowerCase();
     const country  = String(row.country ?? '').toLowerCase();
     const campaign = String(row.campaign ?? row.brand ?? '').toLowerCase();
-    return (
-      (!searchAffiliate || affId.includes(searchAffiliate.toLowerCase())) &&
-      (!searchCountry   || country.includes(searchCountry.toLowerCase())) &&
-      (!searchCampaign  || campaign.includes(searchCampaign.toLowerCase()))
-    );
+    return affId.includes(q) || country.includes(q) || campaign.includes(q);
   });
 
   const columns   = Object.keys(data[0]);
@@ -62,28 +58,14 @@ export const Data: React.FC<{ data: PerformanceRecord[] }> = ({ data }) => {
         <p>Raw records from uploaded file</p>
       </div>
 
-      {/* Search inputs */}
+      {/* Search input */}
       <div style={{ display: 'flex', gap: '12px', marginBottom: '16px', flexWrap: 'wrap' }}>
         <input
           type="text"
-          placeholder="Search Affiliate ID…"
-          value={searchAffiliate}
-          onChange={e => setSearchAffiliate(e.target.value)}
-          style={inputStyle}
-        />
-        <input
-          type="text"
-          placeholder="Search Country…"
-          value={searchCountry}
-          onChange={e => setSearchCountry(e.target.value)}
-          style={inputStyle}
-        />
-        <input
-          type="text"
-          placeholder="Search Campaign…"
-          value={searchCampaign}
-          onChange={e => setSearchCampaign(e.target.value)}
-          style={inputStyle}
+          placeholder="Search Affiliate ID, Country or Campaign…"
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          style={{ ...inputStyle, maxWidth: '420px' }}
         />
       </div>
 

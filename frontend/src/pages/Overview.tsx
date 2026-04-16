@@ -1,5 +1,5 @@
 import React from 'react';
-import { DollarSign, CreditCard, TrendingUp, Percent, UserCheck, Target, Activity, Sliders, Gift, ArrowDownCircle, Users, BarChart2 } from 'lucide-react';
+import { Euro, CreditCard, TrendingUp, Percent, UserCheck, Target, Activity, Sliders, Gift, ArrowDownCircle, Users, BarChart2 } from 'lucide-react';
 import { KPICard } from '../components/KPICard';
 import { type PerformanceRecord, processKPIs } from '../utils/kpiEngine';
 import { useChartColors } from '../lib/theme';
@@ -17,7 +17,7 @@ export const Overview: React.FC<{ data: PerformanceRecord[] }> = ({ data }) => {
   const kpis = processKPIs(data);
   const { axisColor, axisStroke, tooltipStyle } = useChartColors();
 
-  const usd = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
+  const usd = new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 });
   const pct = new Intl.NumberFormat('en-US', { style: 'percent', maximumFractionDigits: 1 });
 
   /* Time-series aggregation */
@@ -65,7 +65,7 @@ export const Overview: React.FC<{ data: PerformanceRecord[] }> = ({ data }) => {
       <div className="kpi-group-label">Financial</div>
       <div className="kpi-grid" style={{ marginBottom: 20 }}>
         <KPICard label="FTD"            value={kpis.ftds.toLocaleString()}            color="#ec4899" icon={<UserCheck     size={15} />} />
-        <KPICard label="Deposits Sum"   value={usd.format(kpis.revenue)}              color="#00d4ff" icon={<DollarSign    size={15} />} />
+        <KPICard label="Deposits Sum"   value={usd.format(kpis.revenue)}              color="#00d4ff" icon={<Euro          size={15} />} />
         <KPICard label="Casino NGR"     value={usd.format(kpis.casino_real_ngr)}      color="#10b981" icon={<TrendingUp    size={15} />} />
         <KPICard label="SB NGR"         value={usd.format(kpis.sb_real_ngr)}          color="#34d399" icon={<Activity      size={15} />} />
         <KPICard label="Partner Income" value={usd.format(kpis.cost)}                 color="#f0b429" icon={<CreditCard    size={15} />} />
@@ -126,7 +126,7 @@ export const Overview: React.FC<{ data: PerformanceRecord[] }> = ({ data }) => {
                   type="number"
                   stroke={axisStroke}
                   tick={{ fontSize: 9, fill: axisColor }}
-                  tickFormatter={(v) => v >= 1_000_000 ? `$${(v / 1_000_000).toFixed(0)}M` : v >= 1_000 ? `$${(v / 1_000).toFixed(0)}k` : `$${v}`}
+                  tickFormatter={(v) => v >= 1_000_000 ? `€${(v / 1_000_000).toFixed(0)}M` : v >= 1_000 ? `€${(v / 1_000).toFixed(0)}k` : `€${v}`}
                   width={50}
                 />
                 <YAxis
@@ -138,7 +138,9 @@ export const Overview: React.FC<{ data: PerformanceRecord[] }> = ({ data }) => {
                 />
                 <Tooltip
                   contentStyle={tooltipStyle}
-                  formatter={(value) => [`$${Number(value ?? 0).toLocaleString()}`, 'Deposits Sum']}
+                  labelStyle={{ color: '#ffffff', fontWeight: 600 }}
+                  itemStyle={{ color: '#ffffff' }}
+                  formatter={(value) => [`€${Number(value ?? 0).toLocaleString()}`, 'Deposits Sum']}
                   cursor={{ fill: 'rgba(255,255,255,0.04)' }}
                 />
                 <Bar dataKey="value" radius={[0, 3, 3, 0]}>
@@ -165,7 +167,7 @@ export const Overview: React.FC<{ data: PerformanceRecord[] }> = ({ data }) => {
               type="number"
               stroke={axisStroke}
               tick={{ fontSize: 11, fill: axisColor }}
-              tickFormatter={(v) => v >= 1_000_000 ? `$${(v / 1_000_000).toFixed(1)}M` : v >= 1_000 ? `$${(v / 1_000).toFixed(0)}k` : `$${v}`}
+              tickFormatter={(v) => v >= 1_000_000 ? `€${(v / 1_000_000).toFixed(1)}M` : v >= 1_000 ? `€${(v / 1_000).toFixed(0)}k` : `€${v}`}
             />
             <YAxis
               type="category"
@@ -178,7 +180,7 @@ export const Overview: React.FC<{ data: PerformanceRecord[] }> = ({ data }) => {
             <Tooltip
               cursor={{ fill: 'rgba(255,255,255,0.04)' }}
               contentStyle={{ backgroundColor: '#ffffff', borderColor: '#e2e8f0', color: '#111827', borderRadius: 8, fontSize: 12, boxShadow: '0 4px 20px rgba(0,0,0,0.15)' }}
-              formatter={(value) => [`$${Number(value ?? 0).toLocaleString()}`, 'Profit']}
+              formatter={(value) => [`€${Number(value ?? 0).toLocaleString()}`, 'Profit']}
             />
             <Bar dataKey="profit" radius={[0, 4, 4, 0]}>
               {topAffiliates.map((entry, idx) => (
